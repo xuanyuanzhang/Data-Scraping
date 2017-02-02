@@ -1,0 +1,26 @@
+function piResponse() {
+piSetCookie('visitor_id42582', '529856469', 3650);
+
+if (document.location.protocol != "https:") {
+var analytics_link = "http://" + "www.ssga-info.com/analytics?";
+pi.tracker.visitor_id='529856469';
+
+pi.tracker.visitor_id_sign='d1508efb467672c1d744942e8a57f0b9befee2ebafaa0c206c2afc4de4d31c03525387a15e2b502230b713332bb0f5a34da833d4';
+
+var variables = 'conly=true';
+for (property in pi.tracker) {
+	variables += "&"+property+"="+pi.tracker[property];
+}
+var headID = document.getElementsByTagName("head")[0];
+piScriptObj[piScriptNum] = document.createElement('script');
+piScriptObj[piScriptNum].type = 'text/javascript';
+piScriptObj[piScriptNum].src = analytics_link + variables;
+headID.appendChild(piScriptObj[piScriptNum]);
+piScriptObj[piScriptNum].onload = function() { return; }
+}
+}
+piResponse();
+
+
+
+

@@ -1,0 +1,231 @@
+/*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/
+/*CROSS DOMAIN: microsite to SPDRs*/
+/* a.Create the overlay drak mask first
+   b.Create the overlay
+   c.Create the iframe to connect with SPDRs*/
+/*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/
+
+/*
+	This method will create a visible overlay on the page.
+	The main use of this method is for login, user profile management, password reset related function.
+*/
+function createIframeOverlay(overlayKey) {
+	createIframeOverlayForOverlayFunction(overlayKey,false);
+}
+/*
+	This method will create a hidden iframe on the page. The user will not see the overlay or content of the page.
+	The main use of this method is for protected resource and logout function.
+	For the protected resource
+	1. Hidden Overlay is open
+	2. if the user is login, the user will be redirect to the resource. See function login() for the callback function.
+	3. if the user is NOT login, the user will be hold on the siteminder login page, so the callback function from siteminder will be called. See 
+	function userNotLogin().
+*/
+function createHiddenIframeOverlay(overlayKey) {
+	createIframeOverlayForOverlayFunction(overlayKey,true);
+}
+/*
+	The method will create a iframe overlay on the page.
+	The parameter hidden will control if the overlay is show or not.
+*/
+function createIframeOverlayForOverlayFunction(overlayKey,hidden) {
+	$j("div.quicklinks").hide();
+	// create a body overlay
+	$j('<div id="cboxOverlay"></div>').appendTo('body');
+	// create a holder and append to body
+	$j('<div id="iframeHolder" class=""><div id="iframeSubHolder"><div class="close"><a href="#" class="close_overlay"></a></div><div class="loading"></div></div></div>').appendTo('body');
+	// bind the click function for the close link
+	$j("#iframeHolder .close a").click(function(){
+		//close the overlay
+		iframe_overlay_off();
+	});
+	// build the iframe, key is the address
+	buildIframe(overlayKey, hidden);
+	$j('html,body').animate({scrollTop:0},'fast');
+}
+/*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/
+/*Remove the cross domain iframe overlay*/
+/*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/
+function iframe_overlay_off(){
+	$j("#iframeHolder, #cboxOverlay").remove();
+}
+/*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/
+/*build the iframe, the overlayKey is the url address of the iframe it build*/
+/*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/
+function buildIframe(overlayKey, hidden) {
+	// create the iframe
+	$j("<iframe>", {
+		id:"iframearea",
+		src: overlayKey,
+		frameborder:0,
+		scrolling:'no',
+		width:'100%',
+		allowtransparency:"true"
+	}).css("min-height", "2000px").appendTo('#iframeSubHolder');
+	if (hidden) {
+		// hide the overlay component
+		hideOverlayComponent();
+	} else {
+		// show the overlay component
+		iframe_overlay_on();
+	}
+	// add the function to the iframearea
+	$j("#iframearea").load(function() {
+		// hide the loading
+		iframe_load_success();
+	});
+}
+/*Display the iframe overlay*/
+function iframe_overlay_on() {
+	$j("iframe#iframearea").hide();
+	$j(".loading, #cboxOverlay").show();
+	$j("#iframeHolder").fadeIn(500);
+	$j("#iframeSubHolder").fadeIn(500);	
+}
+/*Hide Every Component on the overlay*/
+function hideOverlayComponent() {
+	$j(".loading, #cboxOverlay, iframe#iframearea, #iframeHolder, #iframeSubHolder").hide();
+}
+//hide the loading
+function iframe_load_success() {
+	$j(".loading").hide();
+	$j("iframe#iframearea").show();
+	
+	//Fix for the issue that input element lose focus in IE Edge. Input element lose focus if the iframe is destroyed before.
+	setTimeout(function () {
+		if (document.getElementById("iframearea") != undefined) {
+			if (document.getElementById("iframearea").contentWindow.document.getElementById("loginFccForm") != undefined) {
+				document.getElementById("iframearea").contentWindow.document.getElementById("loginFccForm").contentWindow.focus();
+			} else {
+				document.getElementById("iframearea").contentWindow.focus();
+			}
+		}
+	}, 1000);
+}
+//show the loading.
+function reset_loading() {
+	$j(".loading").show();
+}
+/*CROSS DOMAIN:SPDRs to microsite*/
+/*get the SPDRs result from the proxy and process the result*/
+function interactionCompleted(result, userCookie, pairs) {
+	var username, validate, firstname, lastname;
+	for(var i=0; i<pairs.length; i++) {	
+		if (/user=/.test(pairs[i])) {
+			username = pairs[i].replace("user=", "");
+		 }
+		if (/validate=/.test(pairs[i])) {
+		 	validate = pairs[i].replace("validate=", "");
+		 }
+		if (/FirstName=/.test(pairs[i])) {
+		 	firstname = pairs[i].replace("FirstName=", "");
+		 }
+		if (/LastName=/.test(pairs[i])) {
+			lastname = pairs[i].replace("LastName=", "");
+		 }
+	}
+	switch(result){
+		case "loginSuccess":
+			login(firstname,lastname);
+			break;
+		case "register":
+			register(firstname,lastname);
+			break;
+		case "update":
+			update(firstname,lastname);
+			break;
+		case "logout":
+			logout(validate);
+			break;
+		case "notLogin":
+			notLogin(validate);
+			break;
+		default:
+			iframe_overlay_on();
+	}
+}
+/*
+	Callback function that will be triggered after the user login
+*/
+function login(firstname,lastname) {
+	// build the user header
+	buildUserHeader(firstname, lastname);
+	// close the overlay
+	iframe_overlay_off();
+	// complete the saved link
+	completeLoginLink();
+	$j("#reg_footer_link").hide();
+	$j(".login_prompt").hide();
+}
+/*
+	Callback function that will be triggered after the user register
+*/
+function register(firstname,lastname) {
+	// build the user header
+	buildUserHeader(firstname, lastname);
+	$j("#reg_footer_link").hide();
+	$j(".login_prompt").hide();
+	// if the user has already save something....open it
+	if (storedLink.status) {
+		// close the overlay
+		iframe_overlay_off();
+		// if the user has saved link
+		completeLoginLink();
+	}
+}
+/*
+	Callback function that will be triggered after the user update profile
+*/ 
+function update(firstname,lastname){
+	buildUserHeader(firstname, lastname);
+}
+/*
+	build the user header
+*/
+function buildUserHeader(firstname,lastname){
+	// build the user content
+	var loginText = '<a id="profileLink" herf="#" class="profile">My Profile</a><a id="logoutLink"  href="#" class="logoutButton">Logout</a><span> '+ firstname + ' ' + lastname +'</span>';
+	$j("#logoutForm").html(loginText).show();
+	// clean the login_link
+	$j("div.login_link").html('').hide();
+}
+/*
+	log out the user
+*/
+function logout(validate) {
+	// clean the user data in the logout form
+	$j("#logoutForm").html('').hide();
+	// build the content
+	var loginText = '<a href="#" id="login_link" class="arrow">Log In / Register</a>';
+	$j("div.login_link").html(loginText).show();
+	// close the overlay
+	iframe_overlay_off();
+	$j("#reg_footer_link").show();
+	$j(".login_prompt").show();
+    //reload the page if now page is custompage/landingpage.
+	var pathname = window.location.pathname.substring(1);
+	if(pathname != ""){
+		var patharray = pathname.split('/');
+		if(patharray[0] == 'ad' || patharray[0] == 'workingwithus'){
+			location.reload();
+		}
+	}
+}
+function notLogin(validate){
+	// for us, just do a log out
+	logout(validate);
+}
+// callback function
+function userNotLogin() {
+	// the user is not login
+	if($j("#iframeSubHolder").is(":hidden")) {
+		// make sure the overlay is show
+		$j("#cboxOverlay").show();
+		// hide the loading icon
+		$j(".loading").hide();
+		// fade in all the other component
+		$j("#iframeHolder").fadeIn(500);
+		$j("#iframeSubHolder").fadeIn(500);
+		$j("iframe#iframearea").fadeIn(500);
+	}
+}

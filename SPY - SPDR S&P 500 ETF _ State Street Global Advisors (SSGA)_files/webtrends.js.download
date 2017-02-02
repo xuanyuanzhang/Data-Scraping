@@ -1,0 +1,1127 @@
+// WebTrends SmartSource Data Collector Tag
+// Version: 9.4.0     
+// Tag Builder Version: 4.1
+// Created: 9/6/2013 8:15:16 AM
+
+function WebTrends(){
+    var that=this;
+    // begin: user modifiable
+    this.dcsid ="dcsjsgnsq100008ugv9wr3p1j_3i4g";
+    this.domain="statse.webtrendslive.com";  
+    this.timezone=-5;
+    this.onsitedoms="";
+    this.downloadtypes="xls,doc,pdf,txt,csv,zip,docx,xlsx";
+    this.navigationtag="div,table";
+    this.metanames="onyx_code1,onyx_code2";//added for SPDRS only
+    this.defaultParameters = {};
+    this.CUSTOM_TAG=[];
+    this.trackevents=false; //turn off the events on webtrends side.
+    this.trimoffsiteparams=true;
+    this.enabled=true;
+    this.i18n=false;
+    this.paidsearchparams="gclid";
+    this.splitvalue="";
+    this.preserve=true;
+    this.cookieTypes = "all";
+    this.FPCConfig = {
+        enabled: (this.cookieTypes === "all" || this.cookieTypes == "firstPartyOnly"),
+        name: "WT_FPC",
+        domain: "spdrs.com",
+        expires: 63113851500
+    };
+    this.TPCConfig = {
+        enabled: (this.cookieTypes === "all"),
+        cfgType: (this.cookieTypes === "all") ? "":"1"
+    };
+    // end: user modifiable
+    this.DCS={};
+    this.WT={};
+    this.DCSext={};
+    this.images=[];
+    this.index=0;
+
+    this.exre=(function(){return(window.RegExp?new RegExp("dcs(uri)|(ref)|(aut)|(met)|(sta)|(sip)|(pro)|(byt)|(dat)|(p3p)|(cfg)|(redirect)|(cip)","i"):"");})();
+    this.re=(function(){return(window.RegExp?(that.i18n?{"%25":/\%/g,"%26":/\&/g}:{"%09":/\t/g,"%20":/ /g,"%23":/\#/g,"%26":/\&/g,"%2B":/\+/g,"%3F":/\?/g,"%5C":/\\/g,"%22":/\"/g,"%7F":/\x7F/g,"%A0":/\xA0/g}):"");})();
+    
+    //update for different environments
+    var domainName=window.location.hostname;
+    if(domainName=="us.spdrs.com" || domainName=="ca.spdrs.com" || domainName=="mex.spdrs.com") {
+        this.dcsid="dcsa2j7ek100000wg26atxf4v_5f2z";  //spdrs.com PROD WebTrends DcsID
+        this.FPCConfig.domain="spdrs.com";
+    } else if(domainName=="global.spdrs.com") {
+        this.dcsid="dcs8bbobk0000043hqfyz7kv4_6e5g"; //global.spdrs.com
+        this.FPCConfig.domain="spdrs.com";
+    } else if(domainName=="localhost" || domainName=="127.0.0.1") {
+        this.domain = "localhost";
+        this.dcsid="-1";
+        this.FPCConfig.domain=domainName;
+    }else{
+        // for dev/devx/uat testing, it is better to use a new data source
+        this.dcsid="dcslwnplw10000gwjtipiaafc_9g2i"; // Use spdrs.com UAT WebTrends DcsID
+        this.FPCConfig.domain=domainName;
+    }
+}
+
+WebTrends.prototype.dcsGetId=function(){
+    if (this.enabled&&(document.cookie.indexOf(this.FPCConfig.name+"=")==-1)&&(document.cookie.indexOf("WTLOPTOUT=")==-1)&&this.TPCConfig.enabled){
+        document.write("<scr"+"ipt type='text/javascript' src='"+"http"+(window.location.protocol.indexOf('https:')==0?'s':'')+"://"+this.domain+"/"+this.dcsid+"/wtid.js"+"'><\/scr"+"ipt>");
+    }
+}
+
+WebTrends.prototype.setCookieTypes = function (types) {
+    this.FPCConfig.enabled = (types === "all" || types == "firstPartyOnly");    
+    this.TPCConfig.enabled = (types === "all");
+    this.TPCConfig.cfgType = (types === "all") ? "":"1"
+}
+
+WebTrends.prototype.dcsGetCookie=function(name){
+    var cookies=document.cookie.split("; ");
+    var cmatch=[];
+    var idx=0;
+    var i=0;
+    var namelen=name.length;
+    var clen=cookies.length;
+    for (i=0;i<clen;i++){
+        var c=cookies[i];
+        if ((c.substring(0,namelen+1))==(name+"=")){
+            cmatch[idx++]=c;
+        }
+    }
+    var cmatchCount=cmatch.length;
+    if (cmatchCount>0){
+        idx=0;
+        if ((cmatchCount>1)&&(name==this.FPCConfig.name)){
+            var dLatest=new Date(0);
+            for (i=0;i<cmatchCount;i++){
+                var lv=parseInt(this.dcsGetCrumb(cmatch[i],"lv"));
+                var dLst=new Date(lv);
+                if (dLst>dLatest){
+                    dLatest.setTime(dLst.getTime());
+                    idx=i;
+                }
+            }
+        }
+        return unescape(cmatch[idx].substring(namelen+1));
+    }
+    else{
+        return null;
+    }
+}
+
+//dcsGetCrumb("k1=v1;k2=v2","k1", ";")  -> v1
+WebTrends.prototype.dcsGetCrumb=function(cval,crumb,sep){
+    var aCookie=cval.split(sep||":");
+    for (var i=0;i<aCookie.length;i++){
+        var aCrumb=aCookie[i].split("=");
+        if (crumb==aCrumb[0]){
+            return aCrumb[1];
+        }
+    }
+    return null;
+}
+
+WebTrends.prototype.dcsGetIdCrumb=function(cval,crumb){
+    var id=cval.substring(0,cval.indexOf(":lv="));
+    var aCrumb=id.split("=");
+    for (var i=0;i<aCrumb.length;i++){
+        if (crumb==aCrumb[0]){
+            return aCrumb[1];
+        }
+    }
+    return null;
+}
+
+WebTrends.prototype.dcsIsFpcSet=function(name,id,lv,ss){
+    var c=this.dcsGetCookie(name);
+    if (c){
+        return ((id==this.dcsGetIdCrumb(c,"id"))&&(lv==this.dcsGetCrumb(c,"lv"))&&(ss==this.dcsGetCrumb(c,"ss")))?0:3;
+    }
+    return 2;
+}
+
+WebTrends.prototype.dcsDeleteCookie=function(name, path, domain) {    
+    var cDelete = name + "=";
+    cDelete += "; expires=expires=Thu, 01 Jan 1970 00:00:01 GMT";
+    cDelete += "; path=" + path;
+    cDelete += (domain) ? ";domain="+domain : "";        
+    document.cookie = cDelete;
+}
+
+WebTrends.prototype.dcsFPC=function(){
+    if (document.cookie.indexOf("WTLOPTOUT=")!=-1){
+        return;
+    }
+
+    if (!this.FPCConfig.enabled && !this.TPCConfig.enabled)
+        this.WT["ce"] = "0"
+    else if (this.FPCConfig.enabled && !this.TPCConfig.enabled)
+        this.WT["ce"] = "1";
+    else
+        this.WT["ce"] = "2";
+
+    if (!this.FPCConfig.enabled) {
+        this.dcsDeleteCookie(this.FPCConfig.name, "/", this.FPCConfig.domain);
+        return;
+    }
+    var WT=this.WT;
+    var name=this.FPCConfig.name;
+    var dCur=new Date();
+    var adj=(dCur.getTimezoneOffset()*60000)+(this.timezone*3600000);
+    dCur.setTime(dCur.getTime()+adj);
+    var dExp=new Date(dCur.getTime()+315360000000);
+    var dSes=new Date(dCur.getTime());
+    WT.co_f=WT.vtid=WT.vtvs=WT.vt_f=WT.vt_f_a=WT.vt_f_s=WT.vt_f_d=WT.vt_f_tlh=WT.vt_f_tlv="";
+    if (document.cookie.indexOf(name+"=")==-1){
+        if ((typeof(gWtId)!="undefined")&&(gWtId!="")){
+            WT.co_f=gWtId;
+        }
+        else if ((typeof(gTempWtId)!="undefined")&&(gTempWtId!="")){
+            WT.co_f=gTempWtId;
+            WT.vt_f="1";
+        }
+        else{
+            WT.co_f="2";
+            var curt=dCur.getTime().toString();
+            for (var i=2;i<=(32-curt.length);i++){
+                WT.co_f+=Math.floor(Math.random()*16.0).toString(16);
+            }
+            WT.co_f+=curt;
+            WT.vt_f="1";
+        }
+        if (typeof(gWtAccountRollup)=="undefined"){
+            WT.vt_f_a="1";
+        }
+        WT.vt_f_s=WT.vt_f_d="1";
+        WT.vt_f_tlh=WT.vt_f_tlv="0";
+    }
+    else{
+        var c=this.dcsGetCookie(name);
+        var id=this.dcsGetIdCrumb(c,"id");
+        var lv=parseInt(this.dcsGetCrumb(c,"lv"));
+        var ss=parseInt(this.dcsGetCrumb(c,"ss"));
+        if ((id==null)||(id=="null")||isNaN(lv)||isNaN(ss)){
+            return;
+        }
+        WT.co_f=id;
+        var dLst=new Date(lv);
+        WT.vt_f_tlh=Math.floor((dLst.getTime()-adj)/1000);
+        dSes.setTime(ss);
+        if ((dCur.getTime()>(dLst.getTime()+1800000))||(dCur.getTime()>(dSes.getTime()+28800000))){
+            WT.vt_f_tlv=Math.floor((dSes.getTime()-adj)/1000);
+            dSes.setTime(dCur.getTime());
+            WT.vt_f_s="1";
+        }
+        if ((dCur.getDay()!=dLst.getDay())||(dCur.getMonth()!=dLst.getMonth())||(dCur.getYear()!=dLst.getYear())){
+            WT.vt_f_d="1";
+        }
+    }
+    WT.co_f=escape(WT.co_f);
+    WT.vtid=(typeof(this.vtid)=="undefined")?WT.co_f:(this.vtid||"");
+    WT.vtvs=(dSes.getTime()-adj).toString();
+    var expiry= (this.FPCConfig.expires) ? "; expires="+ new Date(new Date().getTime() + (this.FPCConfig.expires)).toGMTString():"";
+    var cur=dCur.getTime().toString();
+    var ses=dSes.getTime().toString();
+    document.cookie=name+"="+"id="+WT.co_f+":lv="+cur+":ss="+ses+expiry+"; path=/"+(((this.FPCConfig.domain!=""))?("; domain="+this.FPCConfig.domain):(""))+";secure";
+    var rc=this.dcsIsFpcSet(name,WT.co_f,cur,ses);
+    if (rc!=0){
+        WT.co_f=WT.vtvs=WT.vt_f_s=WT.vt_f_d=WT.vt_f_tlh=WT.vt_f_tlv="";
+        if (typeof(this.vtid)=="undefined"){
+            WT.vtid="";
+        }
+        WT.vt_f=WT.vt_f_a=rc;
+    }
+}
+
+WebTrends.prototype.dcsIsOnsite=function(host){
+    if (host.length>0){
+        host=host.toLowerCase();
+        if (host==window.location.hostname.toLowerCase()){
+            return true;
+        }
+        if (typeof(this.onsitedoms.test)=="function"){
+            return this.onsitedoms.test(host);
+        }
+        else if (this.onsitedoms.length>0){
+            var doms=this.dcsSplit(this.onsitedoms);
+            var len=doms.length;
+            for (var i=0;i<len;i++){
+                if (host==doms[i]){
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+WebTrends.prototype.dcsTypeMatch=function(pth, typelist){
+    var pth=pth.toLowerCase();
+    var split = pth.indexOf("?");
+    var type;
+    if(split!=-1){
+        var sp1 = pth.indexOf("file=");
+        if(sp1!=-1){
+            return true;
+        }else{
+            return false;
+        }
+    }else{
+        type=pth.substring(pth.lastIndexOf(".")+1,pth.length);
+        var types=this.dcsSplit(typelist);
+        var tlen=types.length;
+        for (var i=0;i<tlen;i++){
+            if (type==types[i]){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    return false;
+}
+
+WebTrends.prototype.dcsEvt=function(evt,tag){
+    var e=evt.target||evt.srcElement;
+    while (e&&e.tagName&&(e.tagName.toLowerCase()!=tag.toLowerCase())){
+        e=e.parentElement||e.parentNode;
+    }
+    return e;
+}
+
+WebTrends.prototype.dcsNavigation=function(evt){
+    var id="";
+    var cname="";
+    var elems=this.dcsSplit(this.navigationtag);
+    var elen=elems.length;    
+    var i,e,elem;
+    for (i=0;i<elen;i++){
+        elem=elems[i];
+        if (elem.length){
+            e=this.dcsEvt(evt,elem);
+            id=(e.getAttribute&&e.getAttribute("id"))?e.getAttribute("id"):"";
+            cname=e.className||"";
+            if (id.length||cname.length){
+                break;
+            }
+        }
+    }
+    return id.length?id:cname;
+}
+
+WebTrends.prototype.dcsMultiTrack=function(){
+    var args=dcsMultiTrack.arguments?dcsMultiTrack.arguments:arguments;
+    //Extend the function to support hash as the parameter.
+    if (args.length == 1 && Object.prototype.toString.call(args[0]) === "[object Object]") {
+        var object = args[0];
+        args = this._KVP2Array(object);
+    }
+    if (args.length > 0 && args.length%2==0){
+        this.dcsSaveProps(args);
+        this.dcsSetProps(args);
+        var dCurrent=new Date();
+        this.DCS.dcsdat=dCurrent.getTime();
+        this.dcsFPC();
+        this.dcsTag();
+        this.dcsRestoreProps();
+    }
+}
+
+WebTrends.prototype.dcsCleanUp=function(){
+    this.DCS={};
+    this.WT={};
+    this.DCSext={};
+    if (arguments.length%2==0){
+        this.dcsSetProps(arguments);
+    }
+}
+
+/*
+ * update all Tag from the parameters
+ */
+WebTrends.prototype.dcsSetProps=function(args){
+    for (var i=0;i<args.length;i+=2){
+        if (args[i].indexOf('WT.')==0){
+            this.WT[args[i].substring(3)]=args[i+1];
+        }
+        else if (args[i].indexOf('DCS.')==0){
+            this.DCS[args[i].substring(4)]=args[i+1];
+        }
+        else if (args[i].indexOf('DCSext.')==0){
+            this.DCSext[args[i].substring(7)]=args[i+1];
+        }
+    }
+}
+
+/*
+ *  Save of Tags into this.args
+ */
+WebTrends.prototype.dcsSaveProps=function(args){
+    var i,x,key,param;
+    if (this.preserve){
+        this.args=[];
+        for (i=0,x=0;i<args.length;i+=2){
+            param=args[i];
+            if (param.indexOf('WT.')==0){
+                key=param.substring(3);
+                this.args[x]=param;
+                this.args[x+1]=this.WT[key]||"";
+                x+=2;
+            }
+            else if (param.indexOf('DCS.')==0){
+                key=param.substring(4);
+                this.args[x]=param;
+                this.args[x+1]=this.DCS[key]||"";
+                x+=2;
+            }
+            else if (param.indexOf('DCSext.')==0){
+                key=param.substring(7);
+                this.args[x]=param;
+                this.args[x+1]=this.DCSext[key]||"";
+                x+=2;
+            }
+        }
+    }
+}
+
+WebTrends.prototype.dcsRestoreProps=function(){
+    if (this.preserve){
+        this.dcsSetProps(this.args);
+        this.args=[];
+    }
+}
+
+WebTrends.prototype.dcsSplit=function(list){
+    var items=list.toLowerCase().split(",");
+    var len=items.length;
+    for (var i=0;i<len;i++){
+        items[i]=items[i].replace(/^\s*/,"").replace(/\s*$/,"");
+    }
+    return items;
+}
+
+// Code section for Enable custom meta tag capture.
+WebTrends.prototype.dcsMetaCap = function() {
+    var elems;
+    if (document.documentElement) {
+        elems = document.getElementsByTagName("meta");
+    }
+    else if (document.all) {
+        elems = document.all.tags("meta");
+    }
+    if (typeof (elems) != "undefined") {
+        var names = this.dcsSplit(this.metanames);
+        var nlen = names.length;
+        var elen = elems.length;
+        for (var i = 0; i < elen; i++) {
+            var name = elems.item(i).name.toLowerCase();
+            var content = elems.item(i).content;
+            if ((name.length > 0) && (content.length > 0)) {
+                for (var j = 0; j < nlen; j++) {
+                    if (name == names[j]) {
+                        this.DCSext["meta_" + names[j]] = content;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+WebTrends.prototype.dcsAdv=function(){
+    this.dcsFPC();
+    this.dcsMetaCap();
+    //To make the existing reports working. 
+    //TODO: we should remove it, it is really not needed if you we update the report config
+    if(this.WT.ti && typeof (this.WT.nti) == "undefined") {
+        //NOTE - this is global now
+        var onyx_code1 = this.DCSext['meta_onyx_code1'] || "1300";
+        var onyx_code2 = this.DCSext['meta_onyx_code2'] || "NA";
+        this.WT.nti = this.WT.ti + "|" + onyx_code1 + "|" + onyx_code2;
+    }
+}
+
+WebTrends.prototype.dcsVar = function(){
+    var dCurrent=new Date();
+    var WT=this.WT;
+    var DCS=this.DCS;
+    WT.tz=parseInt(dCurrent.getTimezoneOffset()/60*-1)||"0";
+    WT.bh=dCurrent.getHours()||"0";
+    WT.ul=navigator.appName=="Netscape"?navigator.language:navigator.userLanguage;
+    if (typeof(screen)=="object"){
+        WT.cd=navigator.appName=="Netscape"?screen.pixelDepth:screen.colorDepth;
+        WT.sr=screen.width+"x"+screen.height;
+    }
+    if (typeof(navigator.javaEnabled())=="boolean"){
+        WT.jo=navigator.javaEnabled()?"Yes":"No";
+    }
+    if (document.title){
+        if (window.RegExp){
+            var tire=new RegExp("^"+window.location.protocol+"//"+window.location.hostname+"\\s-\\s");
+            WT.ti=document.title.replace(tire,"");
+        }
+        else{
+            WT.ti=document.title;
+        }
+    }
+    WT.js="Yes";
+    WT.jv=(function(){
+        var agt=navigator.userAgent.toLowerCase();
+        var major=parseInt(navigator.appVersion);
+        var mac=(agt.indexOf("mac")!=-1);
+        var ff=(agt.indexOf("firefox")!=-1);
+        var ff0=(agt.indexOf("firefox/0.")!=-1);
+        var ff10=(agt.indexOf("firefox/1.0")!=-1);
+        var ff15=(agt.indexOf("firefox/1.5")!=-1);
+        var ff20=(agt.indexOf("firefox/2.0")!=-1);
+        var ff3up=(ff&&!ff0&&!ff10&!ff15&!ff20);
+        var nn=(!ff&&(agt.indexOf("mozilla")!=-1)&&(agt.indexOf("compatible")==-1));
+        var nn4=(nn&&(major==4));
+        var nn6up=(nn&&(major>=5));
+        var ie=((agt.indexOf("msie")!=-1)&&(agt.indexOf("opera")==-1));
+        var ie4=(ie&&(major==4)&&(agt.indexOf("msie 4")!=-1));
+        var ie5up=(ie&&!ie4);
+        var op=(agt.indexOf("opera")!=-1);
+        var op5=(agt.indexOf("opera 5")!=-1||agt.indexOf("opera/5")!=-1);
+        var op6=(agt.indexOf("opera 6")!=-1||agt.indexOf("opera/6")!=-1);
+        var op7up=(op&&!op5&&!op6);
+        var jv="1.1";
+        if (ff3up){
+            jv="1.8";
+        }
+        else if (ff20){
+            jv="1.7";
+        }
+        else if (ff15){
+            jv="1.6";
+        }
+        else if (ff0||ff10||nn6up||op7up){
+            jv="1.5";
+        }
+        else if ((mac&&ie5up)||op6){
+            jv="1.4";
+        }
+        else if (ie5up||nn4||op5){
+            jv="1.3";
+        }
+        else if (ie4){
+            jv="1.2";
+        }
+        return jv;
+    })();
+    WT.ct="unknown";
+    if (document.body&&document.body.addBehavior){
+        try{
+            document.body.addBehavior("#default#clientCaps");
+            WT.ct=document.body.connectionType||"unknown";
+            document.body.addBehavior("#default#homePage");
+            WT.hp=document.body.isHomePage(location.href)?"1":"0";
+        }
+        catch(e){
+        }
+    }
+    if (document.all){
+        WT.bs=document.body?document.body.offsetWidth+"x"+document.body.offsetHeight:"unknown";
+    }
+    else{
+        WT.bs=window.innerWidth+"x"+window.innerHeight;
+    }
+    WT.fv=(function(){
+        var i,flash;
+        if (window.ActiveXObject){
+            for(i=15;i>0;i--){
+                try{
+                    flash=new ActiveXObject("ShockwaveFlash.ShockwaveFlash."+i);
+                    return i+".0";
+                }
+                catch(e){
+                }
+            }
+        }
+        else if (navigator.plugins&&navigator.plugins.length){
+            for (i=0;i<navigator.plugins.length;i++){
+                if (navigator.plugins[i].name.indexOf('Shockwave Flash')!=-1){
+                    return navigator.plugins[i].description.split(" ")[2];
+                }
+            }
+        }
+        return "Not enabled";
+    })();
+    WT.slv=(function(){
+        var slv="Not enabled";
+        try{     
+            if (navigator.userAgent.indexOf('MSIE')!=-1){
+                var sli = new ActiveXObject('AgControl.AgControl');
+                if (sli){
+                    slv="Unknown";
+                }
+            }
+            else if (navigator.plugins["Silverlight Plug-In"]){
+                slv="Unknown";
+            }
+        }
+        catch(e){
+        }
+        if (slv!="Not enabled"){
+            var i,m,M,F;
+            if ((typeof(Silverlight)=="object")&&(typeof(Silverlight.isInstalled)=="function")){
+                for(i=9;i>0;i--){
+                    M=i;
+                    if (Silverlight.isInstalled(M+".0")){
+                            break;
+                    }
+                    if (slv==M){
+                        break;
+                    }
+                }
+                for (m=9;m>=0;m--){
+                    F=M+"."+m;
+                    if (Silverlight.isInstalled(F)){
+                        slv=F;
+                        break;
+                    }
+                    if (slv==F){
+                        break;
+                    }
+                }
+            }
+        }
+        return slv;
+    })();
+    if (this.i18n){
+        if (typeof(document.defaultCharset)=="string"){
+            WT.le=document.defaultCharset;
+        } 
+        else if (typeof(document.characterSet)=="string"){
+            WT.le=document.characterSet;
+        }
+        else{
+            WT.le="unknown";
+        }
+    }
+    WT.tv="9.4.0";
+    WT.sp=this.splitvalue;
+    WT.dl="0";
+    WT.ssl=(window.location.protocol.indexOf('https:')==0)?"1":"0";
+    DCS.dcsdat=dCurrent.getTime();
+    DCS.dcssip=window.location.hostname;
+    DCS.dcsuri=window.location.pathname;
+    WT.es=DCS.dcssip+DCS.dcsuri;
+    if (window.location.search){
+        DCS.dcsqry=window.location.search;
+    }
+    if (DCS.dcsqry){
+        var dcsqry=DCS.dcsqry.toLowerCase();
+        var params=this.paidsearchparams.length?this.paidsearchparams.toLowerCase().split(","):[];
+        for (var i=0;i<params.length;i++){
+            if (dcsqry.indexOf(params[i]+"=")!=-1){
+                WT.srch="1";
+                break;
+            }
+        }
+    }
+    if ((window.document.referrer!="")&&(window.document.referrer!="-")){
+        if (!(navigator.appName=="Microsoft Internet Explorer"&&parseInt(navigator.appVersion)<4)){
+            DCS.dcsref=window.document.referrer;
+        }
+    }
+
+    DCS["dcscfg"] = this.TPCConfig.cfgType;
+    
+}
+
+WebTrends.prototype.dcsEscape = function(S, REL){
+    if (REL!=""){
+        S=S.toString();
+        for (var R in REL){
+             if (REL[R] instanceof RegExp){
+                S=S.replace(REL[R],R);
+             }
+        }
+        return S;
+    }
+    else{
+        return escape(S);
+    }
+}
+
+WebTrends.prototype.dcsA = function(N,V){
+    if (this.i18n&&(this.exre!="")&&!this.exre.test(N)){
+        if (N=="dcsqry"){
+            var newV="";
+            var params=V.substring(1).split("&");
+            for (var i=0;i<params.length;i++){
+                var pair=params[i];
+                var pos=pair.indexOf("=");
+                if (pos!=-1){
+                    var key=pair.substring(0,pos);
+                    var val=pair.substring(pos+1);
+                    if (i!=0){
+                        newV+="&";
+                    }
+                    newV+=key+"="+this.dcsEncode(val);
+                }
+            }
+            V=V.substring(0,1)+newV;
+        }
+        else{
+            V=this.dcsEncode(V);
+        }
+    }
+    return "&"+N+"="+this.dcsEscape(V, this.re);
+}
+
+WebTrends.prototype.dcsEncode = function(S){
+    return (typeof(encodeURIComponent)=="function")?encodeURIComponent(S):escape(S);
+}
+
+WebTrends.prototype.dcsCreateImage = function(dcsSrc){
+    if (document.images){
+        this.images[this.index]=new Image();
+        this.images[this.index].src=dcsSrc;
+        this.index++;
+    }
+}
+
+WebTrends.prototype.dcsMeta = function(){
+    var elems;
+    if (document.documentElement){
+        elems=document.getElementsByTagName("meta");
+    }
+    else if (document.all){
+        elems=document.all.tags("meta");
+    }
+    if (typeof(elems)!="undefined"){
+        var length=elems.length;
+        for (var i=0;i<length;i++){
+            var name=elems.item(i).name;
+            var content=elems.item(i).content;
+            var equiv=elems.item(i).httpEquiv;
+            if (name.length>0){
+                if (name.toUpperCase().indexOf("WT.")==0){
+                    this.WT[name.substring(3)]=content;
+                }
+                else if (name.toUpperCase().indexOf("DCSEXT.")==0){
+                    this.DCSext[name.substring(7)]=content;
+                }
+                else if (name.toUpperCase().indexOf("DCS.")==0){
+                    this.DCS[name.substring(4)]=content;
+                }
+            }
+        }
+    }
+}
+
+WebTrends.prototype.dcsTag = function(){
+    if (document.cookie.indexOf("WTLOPTOUT=")!=-1){
+        return;
+    }
+    var WT=this.WT;
+    var DCS=this.DCS;
+    var DCSext=this.DCSext;
+    var i18n=this.i18n;
+    //For SPDRS it is all https, and we don't need to reprot for http and https. So put all as http to avoid the accepting certification issue.
+    var P="http"+(window.location.protocol.indexOf('https:')==0?'s':'')+"://"+this.domain+(this.dcsid==""?'':'/'+this.dcsid)+"/dcs.gif?";
+    //var P="http://"+this.domain+(this.dcsid==""?'':'/'+this.dcsid)+"/dcs.gif?";
+    if (i18n){
+        WT.dep="";
+    }
+    for (var N in DCS){
+         if (DCS[N]&&(typeof DCS[N]!="function")){
+            P+=this.dcsA(N,DCS[N]);
+        }
+    }
+    for (N in WT){
+        if (WT[N]&&(typeof WT[N]!="function")){
+            P+=this.dcsA("WT."+N,WT[N]);
+        }
+    }
+    for (N in DCSext){
+        if (DCSext[N]&&(typeof DCSext[N]!="function")){
+            if (i18n){
+                WT.dep=(WT.dep.length==0)?N:(WT.dep+";"+N);
+            }
+            P+=this.dcsA(N,DCSext[N]);
+        }
+    }
+    if (i18n&&(WT.dep.length>0)){
+        P+=this.dcsA("WT.dep",WT.dep);
+    }
+    if (P.length>2048&&navigator.userAgent.indexOf('MSIE')>=0){
+        P=P.substring(0,2040)+"&WT.tu=1";
+    }
+    this.dcsCreateImage(P);
+    this.WT.ad="";
+}
+
+WebTrends.prototype.dcsDebug = function(){
+    var t=this;
+    var m="";
+    for (var imageIndex = 0 ; imageIndex < t.images.length ; imageIndex++) {
+        var i = t.images[imageIndex].src;
+        var q = i.indexOf("?");
+        var r = i.substring(0, q).split("/");
+        m += "<b>Protocol</b><br><code>" + r[0] + "<br></code>";
+        m += "<b>Domain</b><br><code>" + r[2] + "<br></code>";
+        m += "<b>Path</b><br><code>/" + r[3] + "/" + r[4] + "<br></code>";
+        m += "<b>Query Params</b><code>" + i.substring(q + 1).replace(/\&/g, "<br>") + "</code>";
+        m += "<br><b>Cookies</b><br><code>" + document.cookie.replace(/\;/g, "<br>") + "</code>";
+        m +="<br>-----------------------<br>";
+    }
+    if (t.w && !t.w.closed) {
+            t.w.close();
+        }
+        t.w = window.open("", "dcsDebug", "width=500,height=650,scrollbars=yes,resizable=yes");
+    t.w.document.write(m);
+    t.w.focus();
+}
+
+WebTrends.prototype.dcsCollect = function(){
+    if (this.enabled){
+        this.dcsVar();
+        this.dcsMeta();
+        this.dcsAdv();
+        if (typeof(this.dcsCustom)=="function"){
+            this.dcsCustom();
+        }
+        this.dcsTag();
+    }
+}
+
+WebTrends.prototype.dcsCustom = function() {
+    try {
+       intiSpdrsTags(); 
+    } catch(e) {
+        //do nothing
+    }
+}
+
+WebTrends.prototype._GetLinkText = function(link){
+     var linkText = link.innerHTML.replace(/<span[^>]*>(.*?)<\/span>/i,"")   //remove <span>PDF</span>
+								  .replace(/(<([^>]+)>)/ig, "");	//remove all tags e.g. <img src="..." />
+     if (!linkText) {
+		linkText = 'N/A'; // if it is a image link set the link text to N/A"
+	 }
+     return linkText;
+}
+
+/**
+ * collect tags from the linke
+ * passing the coustom WT.xxx tag as the HTML5 data attribute like
+ * <a data-WT.ibg_x href="#"> link </a>  ==> it will collect the tag WT.ibg_x1
+ * Please note that all the part after "WT." should be lower case to meeting Webtrends name convention 
+ */
+WebTrends.prototype._InitLinkTags = function(linkTarget){
+	var _wt = this;
+	var linkTitle = _wt._GetLinkText(linkTarget);
+    var reval={
+        "DCS.dcssip" : linkTarget.host,
+        "DCS.dcsuri" : linkTarget.pathname,
+        "DCS.dcsqry" : linkTarget.search,
+        "DCS.dcsref" : window.location.href,
+		"WT.spdrs_link_title": linkTitle,
+        "WT.dl" : 20 //download
+    };
+    for (key in reval) {
+        var newV = this.DCS[key.substring(4)] || this.WT[key.substring(3)];
+        if (newV) {
+            reval[key] = newV;
+        }
+    }
+    //using jqery to collect custome attribute: WT.ibg.x and WT.ibg.y
+    var $jLink = $j(linkTarget);
+    var kvpData = $jLink.data();
+    for (var key in kvpData) {
+        if (/(^WT\.|^DSC\.).+/i.test(key)) {
+            var key2 = key.replace("wt.", "WT.").replace("dsc.","DSC.")
+            reval[key2] = kvpData[key];
+        }
+    }
+    return reval;
+}
+
+/*
+ * {k1:v1, k2:v2} -> [k1,v1,k2,v2]
+ */
+WebTrends.prototype._KVP2Array = function(kvp) {
+    var reval = [];
+    for(var key in kvp) {
+        if(kvp.hasOwnProperty(key) && kvp[key] != "" && kvp[key] != undefined && ( typeof kvp[key] != "function")){
+            reval.push(key);
+            reval.push(kvp[key]);
+        }
+    }
+    return reval;
+}
+
+/*
+ * [k1,v1,k2,v2]-> {k1:v1, k2:v2}
+ */
+WebTrends.prototype._Array2KVP = function(args) {
+    var reval = {};
+    if (args.length % 2 == 0) {
+        for (var i = 0; i < args.length; i++) {
+            reval[args[i]] = args[i++];
+        }
+    }
+    return reval;
+}
+
+WebTrends.prototype._matchUrl = function(urlPattern, testingUrl){
+    if (Object.prototype.toString.call(urlPattern) === "[object String]") {
+        // simple contains
+        return testingUrl.indexOf(urlPattern) > -1;
+    }
+    
+   if (Object.prototype.toString.call(urlPattern) === "[object RegExp]") {
+       return urlPattern.test(testingUrl);
+   }
+   return false;
+}
+
+//TOOD: please remove this menthod, if the reports are updated without using the WT.nti tag
+WebTrends.prototype.spdrs_getLinkInfo = function(query, originalTitle, linkObj){
+    var linkInfo = originalTitle || "";
+    var query = unescape(query || "");
+    //TODO: it is better to user attribute, the longer url is not user friendly
+    //e.g. <a href="abc.pdf" data-WT.ibg_t1="tag1", data-WT.ibg_t2="tag2"> Link Name </>
+    var fund = this._getQryVal("fund", query);
+    var docname = this._getQryVal("docname", query);
+    if (docname) {
+        linkInfo = docname;
+        if (fund) {
+            linkInfo = fund+ " " + linkInfo;
+        }
+    }
+    // new logic to get onyx code
+    //var onyx_code1 = linkObj.getAttribute("onyx_code1") ||  SITE.page_onyx1;
+    //var onyx_code2 = linkObj.getAttribute("onyx_code2") || "NA";
+    var onyx_code1 = linkObj.getAttribute("onyx_code1");
+    var onyx_code2 = linkObj.getAttribute("onyx_code2");
+    
+    // for existing logic to get onyx code
+    if (!onyx_code1 && !onyx_code2) {
+        onyx_code1 = this._getQryVal("onyx_code1", query);
+        onyx_code2 = this._getQryVal("onyx_code2", query);
+    }
+    onyx_code1 = onyx_code1 || this.DCSext['meate_onyx_code1'];
+    onyx_code2 = onyx_code2 || 'NA';
+    linkInfo += " |" + onyx_code1 + "|" + onyx_code2;
+    return linkInfo;
+}
+
+/*
+ */
+WebTrends.prototype._getQryVal = function(name, url){
+    if (typeof(url) == 'undefined') {
+        url = window.location.href;
+    }
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regexS = "[\\?&]" + name + "=([^&#]*)";
+    var regex = new RegExp(regexS);
+    var results = regex.exec(url);
+    if (results == null) 
+        return "";
+    else 
+        return results[1];
+}
+
+WebTrends.prototype.spdrs_linkText = function(link){
+     var linkText = link.innerHTML.replace (/\s*<(span|img)>.*<\/(span|img)>\s*/i, "");
+     return linkText;
+}
+
+/*
+ * use method to send/resend WT.*
+ * e.g.
+ * var para = {};
+ * var para['WT.ti'] = 'My page title'
+ * var para['WT.custom.fund'] = 'SPY'
+ * dcsMultiTrack(para);
+ */
+function dcsMultiTrack(){
+    if (typeof(_tag)!="undefined"){
+        return(_tag.dcsMultiTrack());
+    }
+}
+
+function dcsDebug(){
+    if (typeof(_tag)!="undefined"){
+        return(_tag.dcsDebug());
+    }
+}
+
+/*
+ * For the most of the case we should use the defect (built-in ) tag WT.cg_c and WT.cg.s
+ * We it is already used for each SPDRS page for catagory and sub-category.
+ * We need to defect new  tags, we could defect multiple levels as below
+ * WT.ibg_1
+ * WT.ibg_2
+ * WT.ibg_3
+ */
+function intiSpdrsTags() {
+    // using jQuery here.
+    //the e should be the event target, it is the <a>
+    if (typeof($j) == "undefined") {
+        return;
+    }
+    //////////////////////////////////////////////////////
+    ////// PUT ALL Tag here by the example below ////////
+    //////////////////////////////////////////////////////
+    SPDRS_TAG = [
+        {
+            event : "VISIT",
+            urlPattern : "/ad/",
+            tag : function(){
+                var tmp = {};
+                tmp["WT.ibg_ad"] = document.title;
+                return tmp;
+            }
+        }, 
+        {
+            //This is OffSite click
+            event : "HIT",
+            pageUrlPatten : "",
+            selector: "a[href^='http']",
+            tags:[
+                {
+                    urlPattern : new RegExp("(http|https):\/\/(?!" + window.location.hostname +")"),
+                    tag: function(link){
+                        var tmp = _tag._InitLinkTags(link);
+                        tmp["WT.dl"] = 24;
+                        tmp["WT.nv"] = "";
+                        tmp["WT.ti"] = "OffSite:" + link.href;
+                        return tmp;
+                    }
+                }
+            ]
+        },
+        {
+            //For all downloads
+            event : "HIT",
+            pageUrlPatten : "", 
+            selector: "#SPDR_content a",
+            tags: [
+                {
+                    urlPattern : new RegExp("\/library-content\/|\/site-content\/xls\/|\/docs-advisor-education\/|\/docs-commentary\/"),
+                    tag : function(link){
+                        if (_tag.dcsTypeMatch(link.pathname, _tag.downloadtypes) || _tag.dcsTypeMatch(link.search, _tag.downloadtypes)) {
+                            //now this is the download file.
+                            var tmp = _tag._InitLinkTags(link);
+                            var linkText;
+                            var downloadText;
+                            var index = link.search.indexOf("file=");
+                            if(index!=-1){
+                                var len = (link.search.indexOf("%3F")==-1)?link.search.length:link.search.indexOf("%3F");
+                                linkText = link.host + link.search.substring(index+5,len);
+                                downloadText = link.search.substring(index+5,len);
+                            }else{
+                                linkText = link.host + link.pathname;
+                                downloadText = link.pathname;
+                            }
+                            tmp["WT.dl"] = 20;
+                            tmp["WT.ti"] = "Download:" + linkText;
+                            tmp["DCS.dcsuri"] = downloadText;
+                            tmp["WT.nv"] = "SPDR_content"; 
+                            tmp["WT.nti"] = "Download:" + _tag.spdrs_getLinkInfo(link.search, linkText, link); 
+                        }
+                        //If page URL is the landing page, we need put addtional tag
+                        if (window.location.href.indexOf('/ad/') > 0) {
+                            //now this is the download file.
+                            var tmp = _tag._InitLinkTags(link);
+                            var linkText = link.host + link.pathname;
+                            tmp["WT.ibg_ad"] = document.title;
+                            tmp["WT.ibg_d"] = link.href;
+                            tmp["WT.dl"] = 20;
+                            tmp["DCS.dcsuri"] = link.pathname;
+                            tmp["WT.ti"] = "Download:" + linkText;
+                            tmp["WT.nv"] = "SPDR_content"; 
+                            tmp["WT.nti"] = "Download:" + _tag.spdrs_getLinkInfo(link.search, linkText, link);      
+                        }
+                        return tmp;
+                    }
+                }
+            ]
+        },
+        {
+            event : "HIT",
+            pageUrlPatten : "/ad/", 
+            selector: "#SPDR_content a",
+            tags: [
+                {
+                    urlPattern : "/product/fund.seam",
+                    tag : function(link){
+                        var tmp = _tag._InitLinkTags(link);
+                        var ticker = _tag._getQryVal("ticker", link.search);
+                        tmp["WT.ibg_ad"] = document.title;
+                        tmp["WT.ibg_f"] = ticker;
+                        //we need to set WT.dl as to show this is a click, otherwise it will double the page visit
+                        tmp["WT.dl"] = 99;
+                        tmp["WT.ti"] = "ClickFund:" + ticker;
+                        tmp["WT.nv"] = "SPDR_content"; 
+                        return tmp;
+                    }
+                }
+            ]
+        }
+    ];
+
+    if (SPDRS_TAG.length > 0) {
+        for (var i=0; i < SPDRS_TAG.length; i++) {
+            var eventTag = SPDRS_TAG[i];
+            if (eventTag.event == 'VISIT') {
+                if (_tag._matchUrl(eventTag.urlPattern, window.location.href)) {
+                    _tag.dcsSetProps(_tag._KVP2Array(eventTag.tag()));
+                }
+            }
+            if (eventTag.event == 'HIT') {
+                if (eventTag.pageUrlPatten && !_tag._matchUrl(eventTag.pageUrlPatten, window.location.href)) {
+                    continue;
+                }
+                var selector  = eventTag.selector || "a";
+                //NOTE this event binding iseventTag inside a for loop,
+                //However let the data driven, which mean one click  triggered by two or more webtrends request.
+                //why not click - does not support passing data
+                //why not live - the same thing but it is removed in later version
+                //why not bind - it can not bind to dynamic content.
+                $j(document).on(
+                     //for IE, if user hold CTRL and click, this is not a click
+                    "click",
+                    selector,
+                    {tags: eventTag.tags},
+                    function(e)
+                    {
+                        var testingUrl = $j(this).attr("href");
+                        for (var t = 0; t < e.data.tags.length; t++) {
+                            if (_tag._matchUrl(e.data.tags[t].urlPattern, testingUrl)) {
+                                //Now passing the link into
+                                //alert("send data for the clink");
+                                dcsMultiTrack(e.data.tags[t].tag(this));
+                                break;
+                            }
+                        }
+                    }
+                );
+            }
+            
+        }
+        _tag.CUSTOM_TAG = SPDRS_TAG;
+    }
+    return SPDRS_TAG;
+}
+
+function wtTrackVideo(videoTitle) {
+	//get current page
+	var hostname = window.location.hostname;
+    var path = window.location.pathname;
+	dcsMultiTrack("WT.ssga_video_page",hostname+path,"WT.ssga_video_title",videoTitle);
+}
+function webTrendsForMedia(platformName, username) {
+	// record the social media data
+	dcsMultiTrack("WT.SocialMediaName", platformName, "WT.SocialMediaUser", username);
+}
+function webTrendsForGlobalOverlay(country) {
+	dcsMultiTrack("WT.ssga_country", country);
+}
+//Initialize the Webtrend here without collect the data.
+_tag = new WebTrends();
+_tag.dcsGetId();

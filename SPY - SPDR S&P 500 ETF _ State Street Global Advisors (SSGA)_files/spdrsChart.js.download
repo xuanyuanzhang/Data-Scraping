@@ -1,0 +1,914 @@
+﻿/*!
+ * jQuery , highcharts based charts for SPDRS sites.
+ * Currently support: *  *Perf chart (column bar) at most three columns
+ *  *Sector chart (pie chart)
+ *  *Index History chart: (line chart)
+ *  *Premium Discount to Nav Chart (bar chart)
+ * How To Use:
+ * 0.include jquery and highcharts js file
+ * 1.include the js file in the header
+ * 2.put a line in the body like <div id='chartContainerId' chart='spdrsChart:NAV:SPY'/>
+ * the chart pattern is "spdrsChart:ChartType:FundTicker", in which ChartType is within
+ * "NAV"
+ * "PERF_ME"
+ * "PERF_QE"
+ * "INDEX_HISTORY"
+ * "FUND_SECTOR"
+ * "FUND_ASSET"
+ * "INDEX_SECTOR"
+ */
+if ( typeof $j == 'undefined') {
+    var $j = jQuery.noConflict();
+}
+var SpdrsCharts = {
+    //defined the Chart Types:
+    CHART_NAV : 'NAV',
+    CHART_PERF_ME : 'PERF_ME',
+    CHART_PERF_QE : 'PERF_QE',
+    CHART_INDEX_HISTORY : 'INDEX_HISTORY',
+    CHART_FUND_SECTOR : 'FUND_SECTOR',
+    CHART_INDEX_SECTOR : 'INDEX_SECTOR',
+    CHART_FUND_ASSET : 'FUND_ASSET',
+    //back up the real one: /site-content/data/chart/
+    DATA_LOCATION : '/site-content/data/chart',
+
+    //Premium Discount to Nav has two parts: the quarter dropdown list and the bar chart.
+    //data format:
+    /*
+     * <navHistogram>
+     *   <quarterList>
+     *   <order>1</order>
+     *   <date>Q2 - 2012</date>
+     *   <navList>
+     *     <value>0</value>
+     *     <name>-5.0 to -4.5</name>
+     *   </navList>
+     */
+    createNavBarChart : function(containerId, dataUrl) {
+        var wellFormedXML = this._wellFormedXML;
+        var NAV_DROPDOWN_ID = "navChart_QuarterId", chartObj = {}, navDataList = [], navIntiOptions = {
+            chart : {
+                renderTo : containerId,
+                type : "bar",
+                width : 530,
+                height : 350,
+                style : {
+                    fontFamily : 'Calibri'
+                }
+            },
+            bar : {
+                borderWidth : 0
+            },
+            title : {
+                text : ""
+            },
+            legend : {
+                enabled : false
+            },
+            colors : ['#7aaa6c'],
+            xAxis : {
+                lineWidth : 4,
+                lineColor : '#e0e0e0',
+                categories : [],
+                labels : {
+                    style : {
+                        fontSize : '12px',
+                        color : '#3f3f3f',
+                        fontFamily : 'Calibri'
+                    }
+                }
+            },
+            yAxis : {
+                lineWidth : 4,
+                lineColor : '#e0e0e0',
+                title : {
+                    text : ''
+                },
+                labels : {
+                    style : {
+                        fontSize : '12px',
+                        color : '#3f3f3f',
+                        fontFamily : 'Calibri'
+                    }
+                }
+            },
+            tooltip : {
+                borderRadius : 0,
+                borderWidth : 1,
+                style : {
+                    fontSize : "12px",
+                    fontFamily : 'Calibri'
+                },
+                formatter : function() {
+                    return this.x + "<br/>" + this.y;
+                }
+            },
+            series : [],
+            credits : {
+                enabled : false
+            }
+        };
+
+        function init() {
+            //load data
+            $j.ajax({
+                url : dataUrl,
+                dataType : 'text',
+                success : function(data) {
+                    var dataXmlDoc = $j.parseXML(wellFormedXML(data));
+                    var dataXml = $j(dataXmlDoc);
+                    var quarterList = $j("quarterList", dataXml);
+                    quarterList.each(function(index) {
+                        //quarterList > navList
+                        var seriesOjb = {};
+                        var data = [];
+                        var categories = [];
+                        $j("navList", this).each(function() {
+                            data.push(parseFloat($j("value", this).text()));
+                            categories.push($j("name", this).text());
+                        });
+                        seriesOjb.data = data.reverse();
+                        seriesOjb.name = $j("date", this).text();
+                        seriesOjb.xCategories = categories.reverse();
+                        navDataList.push(seriesOjb);
+                    });
+                    if (navDataList.length > 0) {
+                        var series = {
+                            data : [],
+                            borderWidth : 0,
+                            shadow : false
+                        };
+                        series.name = navDataList[0].name;
+                        series.data = navDataList[0].data;
+                        navIntiOptions.xAxis.categories = navDataList[0].xCategories;
+                        navIntiOptions.series.push(series);
+                        chartObj = new Highcharts.Chart(navIntiOptions);
+                        //we need to put this method within the ajax call to make it sync
+                        createQuarterList();
+                        //bind the onchange to handler
+                        $j("select#" + NAV_DROPDOWN_ID).change(refresh);
+                    }
+                }//end of success
+            });
+            //end of ajax
+        };
+
+        function createQuarterList() {
+            //it is very ticky, we have to set the div with the class='quarter'
+            var quarterDropdownHtml = '<div class="quarter"><label>Quarter</label><select id="' + NAV_DROPDOWN_ID + '"></select></div><BR/>';
+            var chartContainer = $j("#" + containerId);
+            chartContainer.prepend(quarterDropdownHtml);
+            //write select options
+            for (var i = 0; i < navDataList.length; i++) {
+                $j("select#" + NAV_DROPDOWN_ID, chartContainer).append("<option value='" + i + "'>" + navDataList[i].name + "</option>");
+            }
+        };
+
+        function refresh() {
+            var selectedIndex = $j("option:selected", $j(this)).val();
+            if (navDataList.length > selectedIndex) {
+                chartObj.series[0].setData(navDataList[selectedIndex].data, false);
+                chartObj.series[0].name = navDataList[selectedIndex].name;
+                chartObj.xAxis[0].setCategories(navDataList[selectedIndex].xCategories, false);
+                chartObj.redraw();
+            }
+        };
+        init();
+    },
+
+    //Performance chart.
+    //data format:
+    /*
+     * <performance fundName="SPDR<sup>�</sup> S&P MidCap 400 ETF<sup>TM</sup>" bmarkName="S&P MidCap 400 Index">
+     *      <funds>
+     *          <field>1 Month</field>
+     *          <fund>1.91</fund>
+     *          <index>1.94</index>
+     *          <secondIndex></secondIndex>
+     *      </funds>
+     */
+    createPerfChart : function(containerId, dataUrl) {
+	
+
+        var perfChart;
+        var wordWrapFun = this._wordWrap;
+        var addLegendFun = this._addLegend;
+        var wellFormedXML = this._wellFormedXML;
+        var labelList = [];
+        var CHART_BOX_WIDTH = 800;
+        var CHART_BOX_HEIGHT = 345;
+        var replaceCommaForData = this._replaceCommaForData;
+        var unescapeXML = this._unescapeXML;
+        var perfChartOptions = {
+            chart : {
+                renderTo : containerId,
+                type : "column",
+                width : CHART_BOX_WIDTH,
+                height : CHART_BOX_HEIGHT,
+                style : {
+                    color : '#3f3f3f',
+                    fontFamily : 'Calibri'
+                },
+                events : {
+                    load : function(event) {
+                        addLegendFun(perfChartOptions.colors, labelList, containerId, null, null, null, CHART_BOX_WIDTH * 0.7, true);
+                    }
+                }
+            },
+            title : {
+                text : ""
+            },
+            credits : {
+                enabled : false
+            },
+            legend : {
+                enabled : false
+            },
+            colors : ['#7aaa6c','#cdcdcd', '#333333', '#808080'],
+            xAxis : {
+                categories : [],
+                lineWidth : 4,
+                tickWidth : 2,
+                lineColor : '#e0e0e0',
+                labels : {
+                    align : "right",
+                    rotation : -45,
+                    style : {
+                        fontSize : '12px',
+                        color : '#3f3f3f',
+                        fontFamily : 'Calibri'
+                    }
+                }
+            },
+            yAxis : {
+                title : {
+                    text : ""
+                },
+                lineWidth : 4,
+                tickWidth : 2,
+                //as per the UX design, the Y Axis is with a ruler whose ticks are quite close each other.
+                //Here set the fixed Pixel, but let the Highcharts to decide the inteveral value
+                tickPixelInterval : 20,
+                lineColor : '#e0e0e0',
+                gridLineColor : '#eeeeee',
+                labels : {
+                    formatter : function() {
+                        return this.value + "%";
+                    },
+                    style : {
+                        fontSize : '12px',
+                        color : '#3f3f3f',
+                        fontFamily : 'Calibri'
+                    }
+                }
+            },
+            tooltip : {
+                borderRadius : 0,
+                borderWidth : 1,
+                style : {
+                    fontSize : '12px',
+                    fontFamily : 'Calibri'
+                },
+                useHTML : true,
+                formatter : function() {
+                    if (isNaN(this.point.y) /*|| this.point.y == 0*/) {
+                        return false;
+                    }
+                    return '<b>' + this.point.category + '</b><br/>' + wordWrapFun(this.point.series.name, 40) + ": " + this.point.y.toFixed(2) + "%";
+                }
+            },
+            plotOptions : {
+                column : {
+                    borderWidth : 0,
+                    shadow : false
+                }
+            },
+            series : []
+        };
+
+        var xmlData = $j("#" + containerId).next().text();
+	
+        draw(xmlData);
+
+        function draw(xmlData) {
+       
+		var dataXmlDoc = $j.parseXML(wellFormedXML(xmlData));
+            var dataXml = $j(dataXmlDoc);
+		
+            var fundName = $j("performance", dataXml).attr("fundName");
+            fundName = unescapeXML(fundName);
+            
+		//fundName = 'This is a very long fund name like spdrs 500 and 600';
+            var benchmarkName = $j("performance", dataXml).attr("bmarkName")
+            benchmarkName = unescapeXML(benchmarkName);
+
+            var secondaryBmarkName = $j("performance", dataXml).attr("secondBmarkName");
+            secondaryBmarkName = unescapeXML(secondaryBmarkName);
+
+	    var tertiaryBmarkName = $j("performance", dataXml).attr("tertiaryBmarkName");
+            tertiaryBmarkName = unescapeXML(tertiaryBmarkName);	
+	
+
+            var fundSeries = {
+                data : [],
+                name : fundName
+            };
+            var primaryIndexSeries = {
+                data : [],
+                name : benchmarkName
+            };
+            var secondaryIndexSeries = {
+                data : [],
+                name : secondaryBmarkName
+            };
+	    var tertiaryIndexSeries = {
+                data : [],
+                name : tertiaryBmarkName
+            };	
+            var funds = dataXml.find("funds");
+            var valueF;
+            funds.each(function() {
+                if (!!fundName) {
+                    valueF = parseFloat($j("fund", $j(this)).text());
+                    fundSeries.data.push(valueF);
+                }
+                if (!!benchmarkName) {
+                    valueF = parseFloat(replaceCommaForData($j("index", $j(this)).text()));
+                    primaryIndexSeries.data.push(valueF);
+                }
+                if (!!secondaryBmarkName) {
+                    valueF = parseFloat(replaceCommaForData($j("secondIndex", $j(this)).text()));
+                    secondaryIndexSeries.data.push(valueF);
+                }
+		if (!!tertiaryBmarkName) {
+                    valueF = parseFloat(replaceCommaForData($j("tertiaryIndex", $j(this)).text()));
+                    tertiaryIndexSeries.data.push(valueF);
+                }
+                //the categories is common for funds and index series
+                //this is new requirement to use '1 MTH' instead of the '1 Month'
+                var xlabel = $j("field", $j(this)).text();
+                perfChartOptions.xAxis.categories.push(xlabel.toUpperCase());
+            });
+            //TODO: this is a little tricky to handle the reuqirement.
+            //if there is three bar, each bar is 5px and spaces is 2px and 1px
+            if (!!fundName && !!secondaryBmarkName && !!benchmarkName) {
+                perfChartOptions.plotOptions.column.pointPadding = 0.15;
+            }
+
+            if (!!fundName) {
+                labelList.push(fundName);
+                perfChartOptions.series.push(fundSeries);
+            }
+            if (!!benchmarkName) {
+                labelList.push(benchmarkName);
+                perfChartOptions.series.push(primaryIndexSeries);
+            }
+            if (!!secondaryBmarkName) {
+                labelList.push(secondaryBmarkName);
+                perfChartOptions.series.push(secondaryIndexSeries);
+            }
+	    if (!!tertiaryBmarkName) {
+                labelList.push(tertiaryBmarkName);
+                perfChartOptions.series.push(tertiaryIndexSeries);
+            }
+            perfChart = new Highcharts.Chart(perfChartOptions);
+        }
+
+        /*
+         $j.ajax({
+         url: dataUrl,
+         dataType: 'text',
+         success: function(data){
+         draw(data);
+         }//end of success
+         });//end of ajax
+         */
+    },
+    //Sector chart.
+    //data format:
+    /*
+     *<component>
+     *   <asOfDate>10/22/2012</asOfDate>
+     *   <attributes>
+     *       <attribute>
+     *       <rawValue>22.22</rawValue>
+     *       <value>22.22%</value>
+     *       <label>Financials</label>
+     *       <order>1</order>
+     *       </attribute>
+     */
+    createSectorChart : function(containerId, dataUrl) {
+        var sectorAllocationChart;
+        var wordWrapFun = this._wordWrap;
+        var addLegendFun = this._addLegend;
+        var wellFormedXML = this._wellFormedXML;
+        var CHART_BOX_WIDTH = 440;
+        var CHART_SIZE = 200;
+        var CHART_BOX_HEIGHT = 230;
+        var labelList = [];
+        var MAX_COLOR_NUMBER = 15;
+        var MIX_PIE_VALUE = 0.01;
+        var FIRST_COLOR = '#4a4d78';
+        var replaceCommaForData = this._replaceCommaForData;
+        var sectorChartOptions = {
+            chart : {
+                renderTo : containerId,
+                width : CHART_BOX_WIDTH,
+                height : CHART_BOX_HEIGHT,
+                type : "pie",
+                marginRight : CHART_BOX_WIDTH - CHART_SIZE + 10,
+                marginTop : 15,
+                borderRadius : 0,
+                plotShadow : false,
+                animation : false,
+                style : {
+                    fontFamily : 'Calibri'
+                },
+                events : {
+                    load : function(event) {
+                        addLegendFun(sectorChartOptions.colors, labelList, containerId, 12, 12, 'left', CHART_BOX_WIDTH, false);
+                    }
+                }
+            },
+            title : {
+                text : null
+            },
+            credits : {
+                enabled : false
+            },
+            colors : [FIRST_COLOR, '#6bbdb9', '#d4d2aa', '#d38a28', '#6a5649', '#6ea4ce', '#c3cfcd', '#908bb0', '#5f8289', '#c2ae59', '#e2cca3', '#9e8e87', '#2c639e', '#92aa9f', '#cdc9d5'],
+            legend : {
+                enabled : false
+            },
+            plotOptions : {
+                pie : {
+                    size : CHART_SIZE,
+                    borderWidth : 0,
+                    dataLabels : {
+                        enabled : false
+                    },
+                    animation : false
+                }
+            },
+            tooltip : {
+                borderRadius : 0,
+                borderWidth : 1,
+                style : {
+                    fontSize : '12px',
+                    color : '#333333',
+                    fontFamily : "Calibri"
+                },
+                formatter : function() {
+                    // Neither display the tooltip if the pie serie is very thin nor if it is No.15+ serie.
+                    if (isNaN(this.point.y) /*|| this.point.y <= MIX_PIE_VALUE|| this.point.index >= MAX_COLOR_NUMBER */ ) {
+                        return false;
+                    }
+                    return "<b>" + wordWrapFun(this.point.name, 40) + "</b><br/>" + this.point.y.toFixed(2) + "%";
+                },
+                positioner : function(boxWidth, boxHeight, point) {
+                    //(CHART_BOX_WIDTH - boxWidth) / 2
+                    if (point.plotX < this.chart.plotLeft || point.plotX + boxWidth > this.chart.plotLeft + CHART_BOX_WIDTH) {
+                        return {
+                            x : this.chart.plotLeft,
+                            y : point.plotY
+                        };
+                    }
+                    return {
+                        x : point.plotX,
+                        y : point.plotY
+                    };
+                }
+            },
+            series : [{
+                shadow : false,
+                borderWidth : 1,
+                data : []
+            }]
+        };
+        var data = $j("#" + containerId).next().text();
+        draw(data);
+        function draw(data) {
+            var dataXmlDoc = $j.parseXML(wellFormedXML(data));
+            var dataXml = $j(dataXmlDoc);
+            var attributes = dataXml.find("attribute");
+            attributes.each(function(index) {
+                var rawValue = $j("value", $j(this)).text();
+                //23.35%
+                // var rawValueF = parseFloat(rawValue.replace('%', ''));
+                var rawValueF = parseFloat(replaceCommaForData(rawValue.replace('%', '')));
+                //23.35
+                if (rawValueF) {
+                    var label = $j("label", $j(this)).text();
+                    labelList.push("<b>" + label + "</b>" + "   " + rawValue);
+                    sectorChartOptions.series[0].data.push({
+                        index : index,
+                        name : label,
+                        y : rawValueF
+                    });
+                }
+            });
+            //fix the full pie issue.
+            if (sectorChartOptions.series[0].data.length == 1) {
+                var hoverSisabledStates = {
+                    hover : {
+                        enabled : false
+                    }
+                };
+                // set borderWidth = 0 is not working, so set the border color with the same pie color.
+                sectorChartOptions.plotOptions.pie.borderColor = FIRST_COLOR;
+                sectorChartOptions.plotOptions.pie.states = hoverSisabledStates;
+            }
+            sectorAllocationChart = new Highcharts.Chart(sectorChartOptions);
+        }
+
+        /*
+         $j.ajax({
+         url : dataUrl,
+         dataType : 'text',
+         success : function(data) {
+
+         }
+         });
+         //end of ajax
+         */
+    },
+    //Index History Chart.
+    //data format:
+    /*
+     *<history>
+     *   <header>
+     *       <primaryName>S&P MidCap 400 Index</primaryName>
+     *   </header>
+     *   <record>
+     *       <primary>10000.0</primary>
+     *       <date>5/4/1995</date>
+     *       <sortingOrder>0.13</sortingOrder>
+     *   </record>
+     */
+
+    createIndexHistoryChart : function(containerId, dataUrl) {
+        var historyChart;
+        var MAXTICKS = 20;
+        var MONTH = 24 * 60 * 60 * 1000 * 30;
+        var addLegendFun = this._addLegend;
+        var labelList = [];
+        var replaceCommaForData = this._replaceCommaForData;
+        var historyChartOption = {
+            chart : {
+                renderTo : containerId,
+                borderRadius : 0,
+                style : {
+                    fontFamily : 'Calibri'
+                },
+                events : {
+                    load : function(event) {
+                        addLegendFun(historyChartOption.colors, labelList, containerId, null, null, null, 330 * 0.7, true);
+                    }
+                }
+            },
+            title : {
+                text : null
+            },
+            credits : {
+                enabled : false
+            },
+            colors : ['#7aaa6c', '#cdcdcd'],
+            legend : {
+                enabled : false
+            },
+            plotOptions : {
+                series : {
+                    animation : false,
+                    borderWidth : 0,
+                    shadow : false,
+                    marker : {
+                        enabled : false
+                    },
+                    states : {
+                        hover : {
+                            enabled : false
+                        }
+                    }
+                }
+            },
+            xAxis : {
+                type : "datetime",
+                dateTimeLabelFormats : {
+                    month : "%m/%Y"
+                },
+                labels : {
+                    align : "center",
+                    rotation : -45,
+                    style : {
+                        color : "#000000",
+                        fontSize : "10px",
+                        fontFamily : "Arial"
+                    },
+                    formatter : function() {
+                        return Highcharts.dateFormat('%m/%d/%Y', this.value - 1);
+                    },
+                    x : -15,
+                    y : 30
+                },
+                lineWidth : 4,
+                lineColor : '#e0e0e0',
+                tickLength : 5,
+                tickColor : "#e0e0e0",
+                tickWidth : 4
+            },
+            yAxis : {
+                title : {
+                    text : null
+                },
+                lineWidth : 4,
+                lineColor : "#E0E0E0",
+                tickLength : 5,
+                tickColor : "#E0E0E0",
+                tickWidth : 4,
+                gridLineColor : "#eeeeee",
+                labels : {
+                    style : {
+                        color : "#000000",
+                        fontSize : "10px",
+                        fontFamily : "Arial"
+                    },
+                    formatter : function() {
+                        return "$" + Highcharts.numberFormat(this.value, 0);
+                    }
+                }
+            },
+            tooltip : {
+                animation : false,
+                borderRadius : 0,
+                borderWidth : 1,
+                style : {
+                    fontSize : "11px",
+                    fontFamily : "Arial"
+                },
+                formatter : function() {
+                    function numberWithCommas(x) {
+                        var parts = x.toString().split(".");
+                        return parts[0].replace(/\B(?=(\d{3})+(?=$))/g, ",") + (parts[1] ? "." + parts[1] : "");
+                    }
+
+                    return "<b>" + this.point.name + "</b><br/>" + "$ " + numberWithCommas(this.point.y.toFixed(2));
+                }
+            },
+            series : []
+        };
+
+        $j.ajax({
+            url : dataUrl,
+            dataType : 'text',
+            success : function(data) {
+                var dataXmlDoc = $j.parseXML(data);
+                var dataXml = $j(dataXmlDoc);
+                var primaryName = $j("primaryName", dataXml).text();
+                var secondaryName = $j("secondaryName", dataXml).text();
+                var primaryIndexSeries = {
+                    data : [],
+                    name : primaryName
+                };
+                var secondaryIndexSeries = {
+                    data : [],
+                    name : secondaryName
+                };
+                var records = dataXml.find("record");
+                records.each(function() {
+                    var dateStr = $j("date", $j(this)).text();
+                    var date = new Date();
+                    date.setTime(Date.parse(dateStr));
+                    var primaryPerf = parseFloat($j("primary", $j(this)).text());
+                    if (!isNaN(primaryPerf)) {
+                        primaryIndexSeries.data.push({
+                            y : primaryPerf,
+                            name : dateStr,
+                            x : date
+                        });
+                    }
+                    var secondaryPerf = parseFloat($j("secondary", $j(this)).text());
+                    if (!isNaN(secondaryPerf)) {
+                        secondaryIndexSeries.data.push({
+                            y : secondaryPerf,
+                            name : dateStr,
+                            x : date
+                        });
+                    }
+                });
+                //end of each
+                var biggerSize = primaryIndexSeries.data.length > secondaryIndexSeries.data.length ? primaryIndexSeries.data.length : secondaryIndexSeries.data.length;
+                historyChartOption.xAxis.tickInterval = MONTH * Math.ceil(biggerSize / MAXTICKS);
+                if (!!primaryName) {
+                    labelList.push(primaryName);
+                    historyChartOption.series.push(primaryIndexSeries);
+                }
+                //if the secondary name is not in the header, then don't load the data for it.
+                if (!!secondaryName) {
+                    labelList.push(secondaryName);
+                    historyChartOption.series.push(secondaryIndexSeries);
+                }
+                historyChart = new Highcharts.Chart(historyChartOption);
+            }
+        });
+    },
+
+    //Create chart by type and fund ticker.
+    // TODO
+    createChart : function(chartType, container, fund) {
+        if (this.CHART_NAV == chartType) {
+            this.createNavBarChart(container, this._getDataFile(fund, chartType));
+        } else if (this.CHART_PERF_ME == chartType) {
+            this.createPerfChart(container, this._getDataFile(fund, chartType));
+        } else if (this.CHART_PERF_QE == chartType) {
+            this.createPerfChart(container, this._getDataFile(fund, chartType));
+        } else if (this.CHART_INDEX_HISTORY == chartType) {
+            this.createIndexHistoryChart(container, this._getDataFile(fund, chartType));
+        } else if (this.CHART_FUND_SECTOR == chartType) {
+            this.createSectorChart(container, this._getDataFile(fund, chartType));
+        } else if (this.CHART_INDEX_SECTOR == chartType) {
+            this.createSectorChart(container, this._getDataFile(fund, chartType));
+        } else if (this.CHART_FUND_ASSET == chartType) {
+            this.createSectorChart(container, this._getDataFile(fund, chartType));
+        }
+    },
+
+    // Just use the HTML to build the lengend
+    _addLegend : function(colorList, labelList, container, symbolWidth, symbolHeight, algin, maxWidth, isBoldAll) {
+        var timeout = 0;
+        if ($j('#' + container + ' > div').text() == "") {
+            //The chart is not built yet.
+            timeout = 500;
+        }
+
+        setTimeout(function() {
+            var sWidth = symbolWidth, sHeight = symbolHeight;
+            if (!!!symbolWidth) {
+                sWidth = '12px';
+            }
+            if (!!!sHeight) {
+                sHeight = '12px';
+            }
+            var $legendDiv = $j('<div class="chart_legend"><table><tbody></tbody></table></div>');
+            $j("#" + container).after($legendDiv);
+            var $lengendBody = $j('table tbody', $legendDiv);
+            //by default the legend is center aligned.
+            if ('left' === algin) {
+
+            } else {
+                $legendDiv.css('text-align', 'center');
+                $lengendBody.parent().css('margin', '1px auto');
+            }
+            $legendDiv.css({'margin-bottom': '20px', 'position':'relative'});
+            $lengendBody.parent().css('width', 'auto');
+            //data driven but the max number is defined by color numbers
+            var maxItemNum = colorList.length > labelList.length ? labelList.length : colorList.length;
+            for (var i = 0; i < maxItemNum; i++) {
+                var legendItem = $j('<tr><td><span/></td><td>' + labelList[i] + '</td></tr>');
+                legendItem.css('display', 'block');
+                if (!!isBoldAll) {
+                    legendItem.css('font-family', '"UniversLTW02-67BoldCn","Calibri"');
+                }
+                $j('td', legendItem).attr('valign', 'top');
+                $j('td', legendItem).css('border-bottom-style', 'none').css('padding', '0 0 5px 0').css('top', '0px').css('text-align', 'left');
+                if (!!maxWidth) {
+                    $j('td', legendItem).css('max-width', maxWidth + "px");
+                }
+                $j('span', legendItem).css('display', 'inline-block').css('width', sWidth).css('height', sHeight).css('margin', '3px 6px 0 0').css('background-color', colorList[i]);
+                legendItem.appendTo($lengendBody);
+            }
+
+        }, timeout);
+    },
+    _getDataFile : function(fund, chartType) {
+        var finalUrl = '';
+        //this is a full path of the fund file.
+        // if (fund.indexOf("/") >= 0 && fund.lastIndexOf('.xml') == fund.length - 4) {
+        // return fund;
+        // }
+        if (this.DATA_LOCATION.lastIndexOf('/product/fundXML.seam') >= 0) {
+            //the data is form dynamic service call, it is still used by ssgafunds.com
+            if (this.CHART_PERF_ME == chartType) {
+                finalUrl = this.DATA_LOCATION + '?componentType=mePerfComponent&ticker=' + fund;
+            } else if (this.CHART_PERF_QE == chartType) {
+                finalUrl = this.DATA_LOCATION + '?componentType=qePerfComponent&ticker=' + fund;
+            } else if (this.CHART_FUND_SECTOR == chartType) {
+                finalUrl = this.DATA_LOCATION + '?discriminator=FUND_SECTOR_ALLOCATION&fundType=fund&componentType=allocationComponent&ticker=' + fund;
+            } else if (this.CHART_FUND_ASSET == chartType) {
+                finalUrl = this.DATA_LOCATION + '?discriminator=ASSET_CLASS_BREAKDOWN&fundType=fund&componentType=allocationComponent&ticker=' + fund;
+            } else if (this.CHART_MATURITY_LADDER == chartType) {
+                finalUrl = this.DATA_LOCATION + '?discriminator=COMPOSITION_ALLOC&fundType=fund&componentType=allocationComponent&ticker=' + fund;
+            } else if (this.CHART_INDEX_SECTOR == chartType) {
+                finalUrl = this.DATA_LOCATION + '?discriminator=BMARK_SECTOR_ALLOCTAION&fundType=bmark&componentType=allocationComponent&ticker=' + fund;
+            }
+            return finalUrl;
+        }
+        //now DATA_LOCATION should be a folder path.
+        if ( typeof (window.parseUrl) === 'function') {
+            this.DATA_LOCATION = parseUrl(this.DATA_LOCATION);
+        }
+        if (this.CHART_NAV == chartType) {
+            finalUrl = this.DATA_LOCATION + '/' + fund + '_NAV.xml';
+        } else if (this.CHART_PERF_ME == chartType) {
+            finalUrl = this.DATA_LOCATION + '/' + fund + '_ME_PERFORMANCE.xml';
+        } else if (this.CHART_PERF_QE == chartType) {
+            finalUrl = this.DATA_LOCATION + '/' + fund + '_QE_PERFORMANCE.xml';
+        } else if (this.CHART_FUND_SECTOR == chartType) {
+            finalUrl = this.DATA_LOCATION + '/' + fund + '_FUND_SECTOR_ALLOCATION.xml';
+        } else if (this.CHART_INDEX_SECTOR == chartType) {
+            finalUrl = this.DATA_LOCATION + '/' + fund + '_INDEX_SECTOR_ALLOCATION.xml';
+        } else if (this.CHART_FUND_ASSET == chartType) {
+            finalUrl = this.DATA_LOCATION + '/' + fund + '_ASSET_CLASS_BREAKDOWN.xml';
+        } else if (this.CHART_MATURITY_LADDER == chartType) {
+            finalUrl = this.DATA_LOCATION + '/' + fund + '_MATURITY_LADDER.xml';
+        } else if (this.CHART_INDEX_HISTORY == chartType) {
+            finalUrl = this.DATA_LOCATION + '/' + fund + '_INDEX_HISTORY.xml';
+        }
+        return finalUrl;
+    },
+    _wordWrap : function(str, lineMax) {
+        // if (lineStr.length > lineMax) {
+        // var lastSpacePostion = lineStr.substr(0, lineMax).lastIndexOf(" ");
+        // return lineStr.substr(0, lastSpacePostion) + "<br/>" + lineStr.substr(lastSpacePostion + 1, lineStr.length - lastSpacePostion);
+        // }
+        // return lineStr;
+
+        var m = ((arguments.length >= 2) ? arguments[1] : 75);
+        var b = '<br/>';
+        var c = false;
+        var i, j, l, s, r;
+        str += '';
+        if (m < 1) {
+            return str;
+        }
+        for ( i = -1, l = ( r = str.split(/\r\n|\n|\r/)).length; ++i < l; r[i] += s) {
+            for ( s = r[i], r[i] = ""; s.length > m; r[i] += s.slice(0, j) + (( s = s.slice(j)).length ? b : "")) {
+                j = c == 2 || (j = s.slice(0, m + 1).match(/\S*(\s)?$/))[1] ? m : j.input.length - j[0].length || c == 1 && m || j.input.length + ( j = s.slice(m).match(/^\S*/)).input.length;
+            }
+        }
+
+        return r.join("\n");
+    },
+    _wellFormedXML : function(data) {
+	
+        if (!!data) {
+            data = data.replace(/<\?xml.*\?>/i, '');
+            // TODO if some other xml entities(&, ", ', <, > ) exist, this replace may cause error
+            // TODO need test
+            data = data.replace(/&(?!amp;)/g, '&amp;');
+        }
+	return data;
+	
+    },
+
+    // unescape '<' and '>' to show <sup> </sup>
+    _unescapeXML : function(data) {
+        // TODO
+        if (!!data) {
+            data = data.replace(/&gt;/g, '>').replace(/&lt;/g, '<');
+        }
+        return data;
+    },
+    _replaceCommaForData : function(data) {
+        return data.replace(/,/g,'');
+    }
+};
+
+//Search and create the chart inside the container for sth like:
+// <div id='chartContainerId' chart='spdrsChart:NAV:SPY'/>
+function createCharts(container) {
+	if (!!!container) {
+        container = $j(document);
+    }
+    $j('[chart*="spdrsChart\:"]', container).each(function() {
+        var loaded = $j(this).attr('loaded');
+        if (!!!loaded) {
+            var chartParameters = $j(this).attr('chart').split(':');
+       
+	    var chartType = chartParameters[1];
+            var fund = chartParameters[2];
+            var contrainer = $j(this).attr('id');
+	
+            SpdrsCharts.createChart(chartType, contrainer, fund);
+            $j(this).attr('loaded', 'yes');
+        }
+    });
+}
+
+$j.ajaxSetup({
+    cache : false // disable cache
+});
+
+//use the above utility wrapper.
+//for spdrs.com, the fund detail page has three tabs with ajax enabled
+//so similarly only create the chart when its tab is clicked
+$j(document).ready(function() {
+    $j("a.performance").click(function() {
+        createCharts($j('div.performance'));
+    });
+    $j("a[type='premDisNavChart']").click(function() {
+        createCharts($j('div#premDisNavChart'));
+    });
+    $j("a.holdings").click(function() {
+        createCharts($j('div.holdings'));
+    });
+});

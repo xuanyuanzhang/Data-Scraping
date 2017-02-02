@@ -1,0 +1,3380 @@
+/*! Respond.js v1.4.2: min/max-width media query polyfill * Copyright 2013 Scott Jehl
+ * Licensed under https://github.com/scottjehl/Respond/blob/master/LICENSE-MIT
+ *  */
+!function(a){"use strict";a.matchMedia=a.matchMedia||function(a){var b,c=a.documentElement,d=c.firstElementChild||c.firstChild,e=a.createElement("body"),f=a.createElement("div");return f.id="mq-test-1",f.style.cssText="position:absolute;top:-100em",e.style.background="none",e.appendChild(f),function(a){return f.innerHTML='&shy;<style media="'+a+'"> #mq-test-1 { width: 42px; }</style>',c.insertBefore(e,d),b=42===f.offsetWidth,c.removeChild(e),{matches:b,media:a}}}(a.document)}(this),function(a){"use strict";function b(){u(!0)}var c={};a.respond=c,c.update=function(){};var d=[],e=function(){var b=!1;try{b=new a.XMLHttpRequest}catch(c){b=new a.ActiveXObject("Microsoft.XMLHTTP")}return function(){return b}}(),f=function(a,b){var c=e();c&&(c.open("GET",a,!0),c.onreadystatechange=function(){4!==c.readyState||200!==c.status&&304!==c.status||b(c.responseText)},4!==c.readyState&&c.send(null))};if(c.ajax=f,c.queue=d,c.regex={media:/@media[^\{]+\{([^\{\}]*\{[^\}\{]*\})+/gi,keyframes:/@(?:\-(?:o|moz|webkit)\-)?keyframes[^\{]+\{(?:[^\{\}]*\{[^\}\{]*\})+[^\}]*\}/gi,urls:/(url\()['"]?([^\/\)'"][^:\)'"]+)['"]?(\))/g,findStyles:/@media *([^\{]+)\{([\S\s]+?)$/,only:/(only\s+)?([a-zA-Z]+)\s?/,minw:/\([\s]*min\-width\s*:[\s]*([\s]*[0-9\.]+)(px|em)[\s]*\)/,maxw:/\([\s]*max\-width\s*:[\s]*([\s]*[0-9\.]+)(px|em)[\s]*\)/},c.mediaQueriesSupported=a.matchMedia&&null!==a.matchMedia("only all")&&a.matchMedia("only all").matches,!c.mediaQueriesSupported){var g,h,i,j=a.document,k=j.documentElement,l=[],m=[],n=[],o={},p=30,q=j.getElementsByTagName("head")[0]||k,r=j.getElementsByTagName("base")[0],s=q.getElementsByTagName("link"),t=function(){var a,b=j.createElement("div"),c=j.body,d=k.style.fontSize,e=c&&c.style.fontSize,f=!1;return b.style.cssText="position:absolute;font-size:1em;width:1em",c||(c=f=j.createElement("body"),c.style.background="none"),k.style.fontSize="100%",c.style.fontSize="100%",c.appendChild(b),f&&k.insertBefore(c,k.firstChild),a=b.offsetWidth,f?k.removeChild(c):c.removeChild(b),k.style.fontSize=d,e&&(c.style.fontSize=e),a=i=parseFloat(a)},u=function(b){var c="clientWidth",d=k[c],e="CSS1Compat"===j.compatMode&&d||j.body[c]||d,f={},o=s[s.length-1],r=(new Date).getTime();if(b&&g&&p>r-g)return a.clearTimeout(h),h=a.setTimeout(u,p),void 0;g=r;for(var v in l)if(l.hasOwnProperty(v)){var w=l[v],x=w.minw,y=w.maxw,z=null===x,A=null===y,B="em";x&&(x=parseFloat(x)*(x.indexOf(B)>-1?i||t():1)),y&&(y=parseFloat(y)*(y.indexOf(B)>-1?i||t():1)),w.hasquery&&(z&&A||!(z||e>=x)||!(A||y>=e))||(f[w.media]||(f[w.media]=[]),f[w.media].push(m[w.rules]))}for(var C in n)n.hasOwnProperty(C)&&n[C]&&n[C].parentNode===q&&q.removeChild(n[C]);n.length=0;for(var D in f)if(f.hasOwnProperty(D)){var E=j.createElement("style"),F=f[D].join("\n");E.type="text/css",E.media=D,q.insertBefore(E,o.nextSibling),E.styleSheet?E.styleSheet.cssText=F:E.appendChild(j.createTextNode(F)),n.push(E)}},v=function(a,b,d){var e=a.replace(c.regex.keyframes,"").match(c.regex.media),f=e&&e.length||0;b=b.substring(0,b.lastIndexOf("/"));var g=function(a){return a.replace(c.regex.urls,"$1"+b+"$2$3")},h=!f&&d;b.length&&(b+="/"),h&&(f=1);for(var i=0;f>i;i++){var j,k,n,o;h?(j=d,m.push(g(a))):(j=e[i].match(c.regex.findStyles)&&RegExp.$1,m.push(RegExp.$2&&g(RegExp.$2))),n=j.split(","),o=n.length;for(var p=0;o>p;p++)k=n[p],l.push({media:k.split("(")[0].match(c.regex.only)&&RegExp.$2||"all",rules:m.length-1,hasquery:k.indexOf("(")>-1,minw:k.match(c.regex.minw)&&parseFloat(RegExp.$1)+(RegExp.$2||""),maxw:k.match(c.regex.maxw)&&parseFloat(RegExp.$1)+(RegExp.$2||"")})}u()},w=function(){if(d.length){var b=d.shift();f(b.href,function(c){v(c,b.href,b.media),o[b.href]=!0,a.setTimeout(function(){w()},0)})}},x=function(){for(var b=0;b<s.length;b++){var c=s[b],e=c.href,f=c.media,g=c.rel&&"stylesheet"===c.rel.toLowerCase();e&&g&&!o[e]&&(c.styleSheet&&c.styleSheet.rawCssText?(v(c.styleSheet.rawCssText,e,f),o[e]=!0):(!/^([a-zA-Z:]*\/\/)/.test(e)&&!r||e.replace(RegExp.$1,"").split("/")[0]===a.location.host)&&("//"===e.substring(0,2)&&(e=a.location.protocol+e),d.push({href:e,media:f})))}w()};x(),c.update=x,c.getEmValue=t,a.addEventListener?a.addEventListener("resize",b,!1):a.attachEvent&&a.attachEvent("onresize",b)}}(this);
+
+
+
+//for resolving jquery conflict with other javascript libraries.
+var $j = jQuery.noConflict();
+
+//identifies the current host
+var current_host = document.location.host;
+var current_page = window.location.href;
+var current_anchor = window.location.hash;
+var current_path = current_page.substring(current_page.lastIndexOf("/") + 1, current_page.length);
+var precise_page_url = /^\s*(.*?)[#&?]*\s*$/.exec(current_page)[1];
+
+//naming parent window
+window.name = "SPDR";
+
+var toolstatus = false;
+
+//copyright date
+var now = new Date();
+var thisYear = now.getFullYear();
+
+var prospectus_order = new Array();
+
+//RegExp: blank string
+var blank_reg = /^\s*$/;
+//stored link for overlays
+var storedDefault = {
+	'status': false,
+	'href': 'url',
+	'video': false,
+	'popup': false,
+	'newwin': true,
+	'inframe': false,
+	'content': 'nothing'
+};
+var storedLink = storedDefault;	
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////// BROWSER //////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+$j.browser = {};
+$j.browser.mozilla = /mozilla/.test(navigator.userAgent.toLowerCase()) && !/webkit/.test(navigator.userAgent.toLowerCase());
+$j.browser.webkit = /webkit/.test(navigator.userAgent.toLowerCase());
+$j.browser.opera = /opera/.test(navigator.userAgent.toLowerCase());
+$j.browser.msie = /msie/.test(navigator.userAgent.toLowerCase());
+$j.browser.ie7 = /msie 7.0/.test(navigator.appVersion.toLowerCase());
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////// INC v6 ///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+jQuery.fn.inc = function(url, transform, post, t, f, transfer) {
+	//add application level cacheKiller
+	if ( typeof cacheVersion != 'undefined' && url.indexOf('?') < 0) {
+		url = url + '?v=' + cacheVersion;
+	}
+	return this.length ? this.each(function() {
+		t = $j(this);
+
+		transfer = function(txt) {
+			t.html($j.isFunction(transform) ? transform(txt) : txt);
+			post && post();
+		};
+
+		$j.ajax({
+			url : url,
+			success : function(data) {
+				transfer(data);
+			}
+		});
+	}) : this;
+};
+
+var incFunctions= {};
+
+if (!Function.prototype.bind) {
+  Function.prototype.bind = function (oThis) {
+    if (typeof this !== "function") {
+      // closest thing possible to the ECMAScript 5 internal IsCallable function
+      throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+    }
+
+    var aArgs = Array.prototype.slice.call(arguments, 1), 
+        fToBind = this, 
+        fNOP = function () {},
+        fBound = function () {
+          return fToBind.apply(this instanceof fNOP && oThis
+                                 ? this
+                                 : oThis,
+                               aArgs.concat(Array.prototype.slice.call(arguments)));
+        };
+
+    fNOP.prototype = this.prototype;
+    fBound.prototype = new fNOP();
+
+    return fBound;
+  };
+}
+
+var incUtil= {
+	applyFunc:function(args)    
+	{    
+		incFunctions[args[0]].apply(null, args);
+	}, 
+
+	incCallBack : function(param) {
+		var args = param.split(",");
+		return incUtil.applyFunc.bind(null, args);
+	}
+};
+
+$j(function() {
+	$j('[class*="inc\:"]').each(function() {
+		if($j(this).data("incFunc")){
+			  $j(this).inc(unescape(this.className.replace(/.*inc:([^ $]+)/, '$1')), null, incUtil.incCallBack($j(this).data("incFunc")));
+		} else {
+			  $j(this).inc(unescape(this.className.replace(/.*inc:([^ $]+)/, '$1')));
+		}
+	 });
+});
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////SORTING///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+(
+	function(b) {
+		b.tinysort = {
+			id : "TinySort",
+			version : "1.0.4",
+			defaults : {
+				order : "asc",
+				attr : "",
+				place : "start",
+				returns : false
+			}
+		};
+		b.fn.extend({
+			tinysort : function(h, j) {
+				if (h && typeof (h) != "string") {
+					j = h;
+					h = null
+				}
+				var e = b.extend({}, b.tinysort.defaults, j);
+				var p = {};
+				this.each(function(t) {
+					var v = (!h || h == "") ? b(this) : b(this).find(h);
+					var u = e.order == "rand" ? "" + Math.random() : (e.attr == "" ? v.text() : v.attr(e.attr));
+					var s = b(this).parent();
+					if (!p[s]) {
+						p[s] = {
+							s : [],
+							n : []
+						}
+					}
+					if (v.length > 0) {
+						p[s].s.push({
+							s : u,
+							e : b(this),
+							n : t
+						})
+					} else {
+						p[s].n.push({
+							e : b(this),
+							n : t
+						})
+					}
+				});
+				for (var g in p) {
+					var d = p[g];
+					d.s.sort(function k(t, s) {
+						var i = t.s.toLowerCase ? t.s.toLowerCase() : t.s;
+						var u = s.s.toLowerCase ? s.s.toLowerCase() : s.s;
+						if (c(t.s) && c(s.s)) {
+							i = parseFloat(t.s);
+							u = parseFloat(s.s)
+						}
+						return (e.order == "asc" ? 1 : -1) * (i < u ? -1 : (i > u ? 1 : 0))
+					})
+				}
+				var m = [];
+				for (var g in p) {
+					var d = p[g];
+					var n = [];
+					var f = b(this).length;
+					switch(e.place) {
+						case"first":
+							b.each(d.s, function(s, t) {
+								f = Math.min(f, t.n)
+							});
+							break;
+						case"org":
+							b.each(d.s, function(s, t) {
+								n.push(t.n)
+							});
+							break;
+						case"end":
+							f = d.n.length;
+							break;
+						default:
+							f = 0
+					}
+					var q = [0, 0];
+					for (var l = 0; l < b(this).length; l++) {
+						var o = l >= f && l < f + d.s.length;
+						if (a(n, l)) {
+							o = true
+						}
+						var r = (o?d.s:d.n)[q[ o ? 0 : 1]].e;
+						r.parent().append(r);
+						if (o || !e.returns) {
+							m.push(r.get(0))
+						}
+						q[ o ? 0 : 1]++
+					}
+				}
+				return this.pushStack(m)
+			}
+		});
+		function c(e) {
+			var d = /^\s*?[\+-]?(\d*\.?\d*?)\s*?$/.exec(e);
+			return d && d.length > 0 ? d[1] : false
+		}
+
+		function a(e, f) {
+			var d = false;
+			b.each(e, function(h, g) {
+				if (!d) {
+					d = g == f
+				}
+			});
+			return d
+		}
+
+
+		b.fn.TinySort = b.fn.Tinysort = b.fn.tsort = b.fn.tinysort
+	})(jQuery);
+	
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////TOOLTIPS//////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+$j(document).on("mouseenter", "#etf_tools a", function() {
+	$j(this).next().show();
+});
+
+$j(document).on("mouseleave", "#etf_tools a", function() {
+	$j(this).next().hide();
+});
+$j(document).on("mouseenter", "#detail .tool_link .tool a", function() {
+	$j(this).next().show();
+});
+
+$j(document).on("mouseleave", "#detail .tool_link .tool a", function() {
+	$j(this).next().hide();
+});
+
+$j(document).on("mouseenter", "#ETFEd_link", function() {
+	$j("#ETFEd_message").css("left", $j(this).position().left - 5).show();
+});
+
+$j(document).on("mouseleave", "#ETFEd_link", function() {
+	$j("#ETFEd_message").hide();
+});
+
+this.tooltip = function() {
+	xOffset_arrowL = 5;
+	yOffset_arrowL = 65;
+	xOffset_arrowD = 15;
+	yOffset_arrowD = 85;
+
+	$j("#SPDRU_link").hover(function(e) {
+		$j("#SPDRU_message").css("left", $j(this).position().left + 20).show();
+		
+	}, function() {
+		$j("#SPDRU_message").hide();
+	});
+
+	$j("#prospectus #table_lists a.tooltip").hover(function(e) {
+
+		$j("#prospectus .tooltip_content .tooltip_bottom").removeClass("tooltip_arrowD").addClass("tooltip_arrowL");
+		$j("#prospectus .tooltip_content").css("top", (e.pageY - yOffset_arrowL - 50) + "px").css("left", (e.pageX + xOffset_arrowL) + "px").fadeIn("fast");
+	}, function() {
+		$j("#prospectus .tooltip_content").css("display", "none");
+	});
+	$j("#prospectus #table_lists a.tooltip").mousemove(function(e) {
+		$j("#prospectus .tooltip_content").css("top", (e.pageY - yOffset_arrowL - 50) + "px").css("left", (e.pageX + xOffset_arrowL) + "px");
+	});
+
+	$j("#prospectus #actions_top a.tooltip").hover(function(e) {
+		$j("#prospectus .tooltip_content .tooltip_bottom").removeClass("tooltip_arrowL").addClass("tooltip_arrowD");
+		$j("#prospectus .tooltip_content").css("top", (e.pageY - yOffset_arrowD - 50) + "px").css("left", (e.pageX - xOffset_arrowD) + "px").fadeIn("fast");
+	}, function() {
+		$j("#prospectus .tooltip_content").css("display", "none");
+	});
+	$j("#prospectus #actions_top a.tooltip").mousemove(function(e) {
+		$j("#prospectus .tooltip_content").css("top", (e.pageY - yOffset_arrowD - 50) + "px").css("left", (e.pageX - xOffset_arrowD) + "px");
+	});
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////ETF FINDER//////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var px_range, min_returns, min_GER, min_NAV, parentSlider;
+
+function filter_etf_finder_list() {
+	min_returns = parseFloat(((parseInt($j("#slider_returns div.knob").css("left")) + 13) / px_range) * 100).toFixed(2) * .4;
+	min_GER = parseFloat((parseInt($j("#slider_GER div.knob").css("left")) + 13) / px_range).toFixed(2);
+	min_NAV = parseFloat(((parseInt($j("#slider_NAV div.knob").css("left")) + 13) / px_range) * 100).toFixed(2);
+	var timeframe = $j(".radios input:checked").val();
+	$j("#etf_finder #fund_scroll table tbody tr").hide();
+	if ($j("#etf_finder #fund_filters .categories input:checked").length > 0) {
+		$j("#etf_finder #fund_filters .categories input:checked").each(function() {
+			var tester01 = "." + $j(this).val() + ".";
+			$j("#etf_finder #fund_scroll table tbody tr").each(function() {
+				var this_return = $j(this).children("." + timeframe).text();
+				if (min_returns == 0) {
+					this_return = 0;
+				}
+				if ($j(this).attr("type").indexOf(tester01) != -1 && $j(this).children(".f_NAV").attr("type") >= min_NAV && $j(this).children(".f_GER").text() >= min_GER && this_return >= min_returns) {
+					$j(this).show();
+				}
+			});
+		});
+	} else {
+		$j("#etf_finder #fund_scroll table tbody tr").each(function() {
+			var this_return = $j(this).children("." + timeframe).text();
+			if (min_returns == 0) {
+				this_return = 0;
+			}
+			var navNo = $j(this).children(".f_NAV").attr("type") * 100;
+			if (navNo >= min_NAV * 100 && $j(this).children(".f_GER").text() >= min_GER && this_return >= min_returns) {
+				$j(this).show();
+			}
+		});
+	}
+	var howmany = $j("#etf_finder #fund_scroll table tbody tr:visible").length;
+	$j("th.f_results span").text(howmany);
+}
+
+// Global object to hold drag information.
+var dragObj = new Object();
+var cursorStart, elementStart;
+function dragStart(event) {
+	var el, x;
+	if ($j.browser.msie) {
+		dragObj.elNode = window.event.srcElement
+	} else {
+		dragObj.elNode = event.target;
+	}
+	parentSlider = $j(dragObj.elNode).parent().attr("id");
+	$j(dragObj.elNode).children("span").show();
+	x = event.pageX + $j(document).scrollLeft();
+	// Save starting positions of cursor and element.
+	dragObj.cursorStartX = x;
+	dragObj.elStartLeft = parseInt(dragObj.elNode.style.left, 10);
+	if (isNaN(dragObj.elStartLeft))
+		dragObj.elStartLeft = 0;
+	if ($j.browser.msie) {
+		document.attachEvent("onmousemove", dragGo);
+		document.attachEvent("onmouseup", dragStop);
+		window.event.cancelBubble = true;
+		window.event.returnValue = false;
+	} else {
+		document.addEventListener("mousemove", dragGo, true);
+		document.addEventListener("mouseup", dragStop, true);
+		event.preventDefault();
+	}
+}
+
+function dragGo(event) {
+	var x = event.clientX + $j(window).scrollLeft();
+	// Move drag element by the same amount the cursor has moved.
+	var limitD = dragObj.elStartLeft + x - dragObj.cursorStartX;
+	if (limitD >= 168) {
+		dragObj.elNode.style.left = "168px";
+	} else if (limitD <= -13) {
+		dragObj.elNode.style.left = "-13px";
+	} else {
+		dragObj.elNode.style.left = limitD + "px";
+	}
+	min_returns = parseFloat(((parseInt($j("#slider_returns div.knob").css("left")) + 13) / px_range) * 100).toFixed(2) * .4;
+	min_GER = parseFloat((parseInt($j("#slider_GER div.knob").css("left")) + 13) / px_range).toFixed(2);
+	min_NAV = parseFloat(((parseInt($j("#slider_NAV div.knob").css("left")) + 13) / px_range) * 100).toFixed(2);
+	var returnData = "min" + parentSlider.substring(6);
+	var selectData;
+	if (returnData == "min_returns") {
+		selectData = parseFloat(min_returns).toFixed(1) + "%"
+	} else if (returnData == "min_GER") {
+		selectData = min_GER + "%"
+	} else if (returnData == "min_NAV") {
+		selectData = "$" + min_NAV
+	} else {
+	}
+	$j("#" + parentSlider + " div.knob span").html(selectData);
+	if ($j.browser.msie) {
+		window.event.cancelBubble = true;
+		window.event.returnValue = false;
+	} else {
+		event.preventDefault();
+	}
+}
+
+function dragStop(event) {
+	$j(dragObj.elNode).children("span").hide()
+	if ($j.browser.msie) {
+		document.detachEvent("onmousemove", dragGo);
+		document.detachEvent("onmouseup", dragStop);
+	} else {
+		document.removeEventListener("mousemove", dragGo, true);
+		document.removeEventListener("mouseup", dragStop, true);
+	}
+	filter_etf_finder_list();
+}
+
+var findered = false;
+function write_finder(xml) {
+	findered = true;
+	px_range = parseInt($j("div.slider div:first").css("width"));
+	var seenthis = {};
+	$j(xml).find('searchResults').each(function() {
+		var fundSub = $j(this).find('assetClass').text() + ":" + $j(this).find('subAssetClass').text();
+		//var fundCat = $j(this).find('assetClass').text();
+		var fundName = $j(this).find('name').text();
+		var fundTicker = $j(this).find('ticker').text();
+		var fundGER = parseFloat($j(this).find('grossExpenseRatio').text()).toFixed(2);
+		var fundNAV = parseFloat($j(this).find('netAssetValue').text()).toFixed(2);
+		var fundYTD = parseFloat($j(this).find('ytdPerformance').text()).toFixed(2);
+		var fund1YR = parseFloat($j(this).find('oneYrPerformance').text()).toFixed(2);
+		if (fund1YR == "NaN") {
+			fund1YR = "N/A"
+		}
+		var fund5YR = parseFloat($j(this).find('fiveYrPerformance').text()).toFixed(2);
+		if (fund5YR == "NaN") {
+			fund5YR = "N/A"
+		}
+		var fund10YR = parseFloat($j(this).find('tenYrPerformance').text()).toFixed(2);
+		if (fund10YR == "NaN") {
+			fund10YR = "N/A"
+		}
+		var fundIncep = parseFloat($j(this).find('sinceInceptionPerformance').text()).toFixed(2);
+		var fundIncepDate = $j(this).find('inceptionDate').text();
+		var incepFullYR = fundIncepDate.substring(0, 4);
+		var incepYR = fundIncepDate.substring(2, 4);
+		fundIncepDate = fundIncepDate.substring(5, 10).replace(/-/g, "/");
+		if (seenthis[fundTicker]) {
+			var multisubclasses = $j("tr." + fundTicker).attr("type") + fundSub + ".";
+			$j("tr." + fundTicker).attr("type", multisubclasses)
+		} else {
+			$j("<tr type='." + fundSub + ".' class='" + fundTicker + "'><td class='f_name'>" + fundName + "</td><td class='f_ticker'>" + fundTicker + "</td><td class='f_GER'>" + fundGER + "</td><td class='f_NAV' type='" + fundNAV + "'>$" + fundNAV + "</td><td class='f_YTD'>" + fundYTD + "</td><td class='f_1'>" + fund1YR + "</td><td class='f_5'>" + fund5YR + "</td><td class='f_10'>" + fund10YR + "</td><td class='f_incep'>" + fundIncep + "</td><td class='f_incepdate' type='" + incepFullYR + fundIncepDate + "'>" + fundIncepDate + "/" + incepYR + "</td></tr>").appendTo("#etf_finder #fund_scroll table tbody");
+			seenthis[fundTicker] = true;
+		}
+	});
+
+	$j("#etf_finder #fund_scroll table tbody tr").click(function() {
+		window.location.href = "/product/fund.seam?ticker=" + $j(this).children(".f_ticker").text();
+	});
+
+	$j("#fund_scroll table tbody > tr").tsort("td.f_name", {
+		order : "asc"
+	});
+	$j("#fund_list th.f_name a").addClass("asc");
+
+	var seenit = {};
+	$j(xml).find('assetClass').each(function() {
+		var fundClass2 = $j(this).text();
+		if (seenit[fundClass2]) {
+		} else {
+			$j("<a href='#' class='parentasset'>" + fundClass2 + "</a><div class='parentasset' type='" + fundClass2 + "'></div>").appendTo("#etf_finder #fund_filters .categories");
+			seenit[fundClass2] = true;
+		}
+	});
+
+	var seen = {};
+	$j(xml).find('subAssetClass').each(function() {
+		var fundClass1 = $j(this).text();
+		var parentclass = $j(this).siblings("assetClass").text();
+		var parentChild = parentclass + "." + fundClass1;
+		if (seen[parentChild]) {
+		} else {
+			$j("<div><input type='checkbox' value='" + parentclass + ":" + fundClass1 + "'><label>" + fundClass1 + "</label></div>").appendTo("#etf_finder #fund_filters div[type='" + parentclass + "']");
+			seen[parentChild] = true;
+		}
+	});
+	
+	$j("a.parentasset:first").addClass("active");
+	$j("div.parentasset:first").show();
+
+	$j("#etf_finder th a").click(function() {
+		var sortOn = $j(this).parent().attr("class");
+		if ($j(this).hasClass("asc")) {
+			$j(this).removeClass("asc");
+			if (sortOn == "f_NAV" || sortOn == "f_incepdate") {
+				$j("#fund_scroll table tbody > tr").tsort("td." + sortOn, {
+					order : 'desc',
+					attr : 'type'
+				});
+			} else {
+				$j("#fund_scroll table tbody > tr").tsort("td." + sortOn, {
+					order : 'desc'
+				});
+			}
+		} else {
+			$j("#etf_finder th a").removeClass("asc");
+			$j(this).addClass("asc");
+			if (sortOn == "f_NAV" || sortOn == "f_incepdate") {
+				$j("#fund_scroll table tbody > tr").tsort("td." + sortOn, {
+					order : 'asc',
+					attr : 'type'
+				});
+			} else {
+				$j("#fund_scroll table tbody > tr").tsort("td." + sortOn, {
+					order : 'asc'
+				});
+			}
+		}
+		$j("#fund_scroll").scrollTop(0);
+		return false;
+	});
+
+	$j("#etf_finder a.parentasset").click(function() {
+		/*$j("#etf_finder a.parentasset").removeClass("active");*/
+		if ($j(this).next().is(":visible")) {
+			$j(this).next().hide();
+			$j(this).removeClass("active");
+		} else {
+			$j(this).next().show();
+			$j(this).addClass("active");
+		}
+		return false;
+	});
+
+	$j("#etf_finder div.knob").mousedown(function(event) {
+		dragStart(event);
+	});
+
+	$j("#etf_finder div.progress").click(function(event) {
+		var wherezzzz = $j(this).offset();
+		var becuzy = event.clientX - wherezzzz.left - 13;
+		$j(this).siblings(".knob").css("left", becuzy + "px");
+		min_returns = parseFloat(((parseInt($j("#slider_returns div.knob").css("left")) + 13) / px_range) * 100).toFixed(2) * .4;
+		$j("#slider_returns div.knob span").html(parseFloat(min_returns).toFixed(1) + "%");
+		min_GER = parseFloat((parseInt($j("#slider_GER div.knob").css("left")) + 13) / px_range).toFixed(2);
+		$j("#slider_GER div.knob span").html(min_GER + "%");
+		min_NAV = parseFloat(((parseInt($j("#slider_NAV div.knob").css("left")) + 13) / px_range) * 100).toFixed(2);
+		$j("#slider_NAV div.knob span").html("$" + min_NAV);
+		filter_etf_finder_list();
+	});
+
+	$j("#etf_finder #fund_filters input").click(function() {
+		filter_etf_finder_list();
+	});
+
+	$j("#etf_finder #fund_filters .categories label").click(function() {
+		$j(this).prev().click();
+	});
+
+	$j("a#clearAll").click(function() {
+		$j("#etf_finder #fund_filters input").removeAttr("checked");
+		$j("#etf_finder #fund_filters .sliders .radios input[value='f_YTD']").click();
+		$j("#etf_finder #fund_scroll table tbody tr").hide();
+		$j(".slider div.knob").css("left", "-13px");
+		$j("th.f_results span").text("0");
+		return false;
+	});
+
+	$j("a#collapseAll").click(function() {
+		$j("#etf_finder #fund_filters a.parentasset").removeClass("active");
+		$j("#etf_finder #fund_filters div.parentasset").hide();
+		return false;
+	});
+
+	$j("a#expandAll").click(function() {
+		$j("#etf_finder #fund_filters a.parentasset").addClass("active");
+		$j("#etf_finder #fund_filters div.parentasset").show();
+		return false;
+	});
+
+	var asofthis = $j(xml).find('performanceAsOfDate:eq(0)').text();
+	var asofYR = asofthis.substring(2, 4);
+	asofthis = asofthis.substring(5, 10);
+	asofthis = asofthis.replace(/-/g, "/");
+
+	$j("th.f_asof span").text(asofthis + "/" + asofYR);
+
+	$j.ajax({
+		url : "/site-content/xml/etfFinder.xml",
+		dataType : "xml",
+		error : function() {
+		},
+		success : function(xml) {
+			var disclaimed = $j(xml).find('funds').attr("performanceDisclaimer");
+			$j("#fund_list p").text(disclaimed);
+		}
+	});
+	var howmany = $j("#etf_finder #fund_scroll table tbody tr:visible").length;
+	$j("th.f_results span").text(howmany);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////PROMOS/////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var
+promointer, pictures;
+function run_promos() {
+	$j("#promo_controls div").click(function() {
+		if ($j(this).hasClass("active")) {
+		} else {
+			clearInterval(promointer);
+			var lnkid = $j(this).index();
+			$j("#promos div.active").fadeOut().removeClass("active");
+			$j("#promo_controls div").removeClass("active");
+			$j(this).addClass("active");
+			$j("#promos div.promo_item:eq(" + lnkid + ")").fadeIn().addClass("active");
+		}
+	});
+}
+
+function promos_cycle(whatit) {
+	whatit = pictures;
+	$j("#promos .active").each(function() {
+		var lnkid = $j(this).index();
+		$j(this).fadeOut().removeClass("active");
+		$j("#promo_controls div:eq(" + lnkid + ")").removeClass("active");
+		if ($j(this).is(":last-child")) {
+			$j("#promos div.promo_item:first").fadeIn().addClass("active");
+			$j("#promo_controls div:first").addClass("active");
+			clearInterval(promointer);
+		} else {
+			$j("#promo_controls div:eq(" + (lnkid + 1) + ")").addClass("active");
+			$j(this).next().fadeIn().addClass("active");
+		}
+	});
+}
+
+//promo parsing for home page
+function write_promos(xml) {
+	if ($j("#promos div.promo_item").length > 1) {
+		$j("#promos div.promo_item").each(function() {
+			var promoNumber = $j(this).index() + 1;
+			$j("#promo_controls").append("<div>" + promoNumber + "</div>");
+		});
+		$j("#promo_controls div:first,#promos div.promo_item:first").addClass("active");
+		run_promos();
+		pictures = $j("#promos div.active");
+		promointer = window.setInterval("promos_cycle()", 7000);
+	} else {
+		$j("#promos div.promo_item:first").addClass("active");
+	}
+}
+
+function openSpotlightSameWindow(myURL, site_section) {
+	window.location = myURL;
+	dcsMultiTrack('WT.z_site_Section', site_section, 'WT.z_site_visits', '1');
+}
+
+function openSpotlightNewWindow(myURL, site_section, windowFeatures) {
+	openNewWindow(myURL, "page", windowFeatures);
+	dcsMultiTrack('WT.z_site_Section', site_section, 'WT.z_site_visits', '1');
+}
+
+function openNewWindow(URLtoOpen, windowName, windowFeatures) {
+	newWindow = window.open(URLtoOpen, windowName, windowFeatures);
+}
+
+function load_carousel(){
+    $j(".module_carousel").each(function(){
+        var holderWidth = $j(this).find(".carousel_items").width(),
+            $itemList = $j(this).find(".carousel_items ul"),
+            $items = $itemList.find("li"),
+            itemWidth = $items.outerWidth(true),
+            itemLength = $items.length,
+            $btnLeft = $j(this).find(".carousel_left"),
+            $btnRight = $j(this).find(".carousel_right"),
+            maxVisibleCount = Math.round(holderWidth / itemWidth),
+            maxPositionMove = itemLength - maxVisibleCount;
+        $btnLeft.addClass("inactive");
+        if(itemLength <= maxVisibleCount) {
+            $btnRight.addClass("inactive");
+        }else {
+            $itemList.data("position", 0);
+            $btnLeft.click(function(e){
+                e.preventDefault();
+                var position = $itemList.data("position");
+                position--;
+                $itemList.animate({"left": position * itemWidth * -1 + "px"});
+                if(position === 0){
+                    $j(this).addClass("inactive");
+                }
+                if(position !== maxPositionMove){
+                    $btnRight.removeClass("inactive");
+                }
+                $itemList.data("position", position);
+            });
+            $btnRight.click(function(e){
+                e.preventDefault();
+                var position = $itemList.data("position");
+                position++;
+                $itemList.animate({"left": position * itemWidth * -1 + "px"});
+                console.log(itemLength + " ~ " + position);
+                if(position === maxPositionMove){
+                    $j(this).addClass("inactive");
+                }
+                if(position !== 0){
+                    $btnLeft.removeClass("inactive");
+                }
+                $itemList.data("position", position);
+            });
+        }
+    });
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+$j(document).on("click", ".participants li a", function() {
+	if ($j(this).hasClass("ap_contact") || $j(this).hasClass("ap_ETFs")) {
+		$j(this).parent().children("div").hide();
+		if ($j(this).hasClass("active")) {
+			$j(this).removeClass("active");
+		} else {
+			$j(this).parent().children("a").removeClass("active");
+			var whomto = $j(this).attr("class");
+			$j(this).parent().children("div." + whomto).show();
+			$j(this).addClass("active");
+		}
+		return false;
+	} else {
+	}
+});
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////// SEARCH AREA in HEADER ////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function autocomplete($input, data, $container) {
+
+	//Disable the autocomplete behavior of input in different browsers
+	$input.attr("autocomplete", "off");
+
+	//Reset Input when page loaded
+	$input.val('Keyword or ticker').addClass("hint");
+
+	//Create some values
+	var minLength = 2, autoFocus = false, wrapAround = true;
+	//true: press down key when focus on the last item, the focus will move to the first item
+	var timeout, lastKeyCode, query = "", allTickers;
+	var hasmoved = false;
+
+	for (var i = 0; i < data.length; i++) {
+		var fundItem = data[i];
+		var ticker_item = fundItem.substring(fundItem.indexOf('(') + 1, fundItem.indexOf(')'));
+		allTickers += ticker_item + ",";
+	}
+
+	allTickers = allTickers.toLowerCase();
+
+	//Bing Key Press Events
+	var KeyCode = {
+		DOWN : 40,
+		UP : 38,
+		ENTER : 13,
+		ESC : 27,
+		BACKSPACE : 8,
+		DELETE : 46,
+		RIGHT : 39,
+		LEFT : 37,
+		PAGEUP : 33,
+		PAGEDOWN : 34
+	};
+
+	$input.on({
+		keydown : function(e) {
+			lastKeyCode = e.which;
+			switch(e.which) {
+				case KeyCode.DOWN:
+					e.preventDefault();
+					_next();
+					break;
+				case KeyCode.UP:
+					e.preventDefault();
+					_prev();
+					break;
+				case KeyCode.ENTER:
+					e.preventDefault();
+					_handleEnterKey();
+					break;
+				case KeyCode.ESC:
+					e.preventDefault();
+					_hideResult();
+					break;
+				case KeyCode.RIGHT:
+				case KeyCode.LEFT:
+				case KeyCode.PAGEUP:
+				case KeyCode.PAGEDOWN:
+					break;
+				default:
+					clearTimeout(timeout);
+					timeout = setTimeout(_search, 400);
+					break;
+			};
+		},
+		blur : function() {
+			if (document.activeElement.id != $container[0].id) {
+				_hideResult();
+				if (/^\s*$/.test($j(this).val())) {
+					$j(this).val('Keyword or ticker').addClass("hint");
+				}
+			} else {
+				$container.on("blur", function() {
+					_hideResult();
+				});
+			}
+		},
+		focus : function() {
+			if ($j(this).val() == 'Keyword or ticker') {
+				$j(this).val("");
+			}
+			$j(this).removeClass('hint');
+		}
+	});
+
+	//Bind mouseenter and click events to the result items
+	$container.on({
+		mouseenter : function() {
+			$j(this).siblings().removeClass("active");
+			$j(this).addClass("active");
+		},
+		click : function(e) {
+			e.preventDefault();
+			var $link = $j(this).children("a");
+			$input.val($link.text());
+			_hideResult();
+			if ($link.attr("id") == "trahk") {
+				showOverlayBG();
+				/*$j(".overlay_content#trahk").attr("style", "left:" + ($j(window).width() / 2 - 300) + "px").show();*/
+				relocateOverlay();
+			} else {
+				window.location.href = $link.attr("href");
+			}
+		}
+	}, "li");
+
+	//Get the Result List by searching from the source data
+	function _search() {
+		hasmoved = false;
+		query = $input.val();
+		query = _trimString(query);
+		query = query.toLowerCase();
+		if (query.length < minLength) {
+			if (lastKeyCode == KeyCode.BACKSPACE || lastKeyCode == KeyCode.DELETE) {
+				_hideResult();
+			}
+			return;
+		}
+		var htmls = ["", "", ""];
+		var hint_list = "";
+		var q_reg = new RegExp("(" + _escapeRegexp(query) + ")", "i");
+		var fund_item, founded, item, founded_index;
+		for (var i = 0; i < data.length; i++) {
+			fund_item = data[i];
+			founded = fund_item.search(q_reg);
+			var ticker = fund_item.substring(fund_item.indexOf('(') + 1, fund_item.indexOf(')'));
+			fund_item = fund_item.replace("(" + ticker + ")", "<span>" + "[" + ticker + "]" + "</span>");
+			var fund_url = '/product/fund.seam?ticker=' + ticker;
+			if (founded > -1) {
+				var matchthis = "(" + query;
+				var exactmatch = matchthis + ")";
+				var fund_cased = fund_item.toLowerCase();
+				if (fund_cased.indexOf(exactmatch) > 0) {
+					item = "<li class='exact'><a href='" + fund_url + "'>" + fund_item.replace(q_reg, "<strong>$1</strong>") + "</a></li>";
+				} else if (fund_cased.indexOf(matchthis) > 0) {
+					item = "<li class='match'><a href='" + fund_url + "'>" + fund_item.replace(q_reg, "<strong>$1</strong>") + "</a></li>";
+				} else {
+					item = "<li><a href='" + fund_url + "'>" + fund_item.replace(q_reg, "<strong>$1</strong>") + "</a></li>";
+				}
+				founded_index = fund_item.search(q_reg);
+				if (founded_index <= -1) {
+					htmls[2] += item;
+				} else if (founded_index == 0) {
+					htmls[0] += item;
+				} else {
+					htmls[1] += item;
+				}
+			}
+		}
+		hint_list = htmls.join("");
+		if (hint_list != "") {
+			$container.html("<ul>" + hint_list + "</ul>");
+			if (autoFocus) {
+				var first_item = $container.find("li").first();
+				first_item.addClass("active");
+			}
+			$container.show().scrollTop(0);
+		} else {
+			_hideResult();
+		}
+	}
+
+	//Move focus to next item
+	function _next() {
+		if ($container.is(":visible")) {
+			hasmoved = true;
+			var $items = $container.find("li"), $active = $items.filter(".active"), target = $active.index(), $next;
+			if (target == -1) {
+				$next = $items.first();
+			} else if (target == $items.length - 1) {
+				$active.removeClass("active");
+				$next = wrapAround ? $items.first() : $active;
+			} else {
+				$next = $active.removeClass("active").next();
+			}
+			$next.addClass('active');
+			_movePosition($container.find("li.active"));
+		}
+	}
+
+	//Move focus to previous item
+	function _prev() {
+		if ($container.is(":visible")) {
+			hasmoved = true;
+			var $items = $container.find("li"), $active = $items.filter(".active"), target = $active.index(), $prev;
+			if (target == -1) {
+				$prev = $items.last();
+			} else if (target == 0) {
+				$active.removeClass("active");
+				$prev = wrapAround ? $items.last() : $active;
+			} else {
+				$prev = $active.removeClass("active").prev();
+			}
+			$prev.addClass('active');
+			_movePosition($container.find("li.active"));
+		}
+	}
+
+	//Move the position of the scroll bar
+	function _movePosition(ele) {
+		var pos_y = ele.position().top, ele_h = ele.outerHeight(), area_h = $container.height(), scroll_h = $container.scrollTop();
+		if ((pos_y + ele_h) > area_h) {
+			$container.scrollTop(pos_y + ele_h + scroll_h - area_h);
+		} else if (pos_y < 0) {
+			$container.scrollTop(scroll_h + pos_y);
+		}
+	}
+
+	//Hide Result
+	function _hideResult() {
+		$container.fadeOut(300, function() {
+			$j(this).html("").removeAttr("autocomplete");
+		});
+	}
+
+	function _escapeRegexp(value) {
+		return value.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&");
+	}
+
+	function _trimString(value) {
+		return !!String.prototype.trim ? value.trim() : value.replace(/^\s+|\s+$/g, "");
+	}
+
+	function _handleEnterKey() {
+		if (allTickers.indexOf(query) < 0 && hasmoved == false) {
+			submitSearch(query);
+		} else if ($container.find("li.exact a").length > 0 && query.length > minLength && hasmoved == false) {
+			$container.find("li.exact a").click();
+		} else if ($container.find("li.match a").length > 0 && query.length > minLength && hasmoved == false) {
+			$container.find("li.match a").click();
+		} else {
+			$container.find("li.active a").click();
+		}
+	}
+
+}
+
+function submitSearch(keyword) {
+	if (keyword == "Keyword or ticker" || keyword.length < 3) {
+		return false;
+	} else {
+		var querysearch = keyword.replace(/&/g, "%26");
+		window.location.href = "/search/searchResults.seam?newReq=true&keyword=" + querysearch;
+	}
+}
+
+/*rebranding*/
+function relocateOverlay() {
+	var docW = $j(window).width();
+	$j("#leavingSite").css("left", docW / 2 - $j("#leavingSite").width() / 2);
+	$j("#video").css("left", docW / 2 - $j("#video").width() / 2);
+	$j(".overlay_content#trahk").css("left", docW / 2 - $j(".overlay_content#trahk").width() / 2);
+	$j(".overlay_content#countrySelection").css("left", docW / 2 - $j(".overlay_content#countrySelection").width() / 2);
+}
+
+$j(window).resize(function() {
+	relocateOverlay();
+});
+
+
+/*=== Overlay Basic Start ===*/
+var cachedScrollPos = 0,
+    isdCountryDropdown;
+function showOverlayBg(type){
+    var bgClass = "";
+    switch (type) {
+        case "mask":
+            bgClass += " mask";
+            break;
+        case "maskMobileOnly":
+            bgClass += " mobile-mask";
+            break;
+        case "maskTooltipOnly":
+            bgClass += " tooltip-mask";
+            break;
+        default:
+            break;
+    }
+    hideOverlayBg();
+    $j(".bg-overlay").addClass("active" + bgClass);
+}
+
+function hideOverlayBg(){
+    $j(".bg-overlay").removeClass("active mask mobile-mask tooltip-mask");
+    
+    //Reset Body & Header
+    resetBodyScroll();
+    $j("header").removeClass("focused");
+    
+    //Reset Nav
+    $j("nav").find(".active").removeClass("active").end()
+             .find(".active-level-1").removeClass("active-level-1");
+    $j(".navbar-toggle").addClass("collapsed");
+    $j("#spdr-navbar").attr("style", "");
+    
+    
+    //Reset Video Overlay
+    if ($j("#video").is(":visible")) {
+        $j("#video #video-player").html('');
+    }
+    
+    //Reset Popup Overlays 
+    $j(".overlay").removeClass("active");
+    
+    //Reset Quicklinks Popup
+    $j("#controls-links .quicklinks").removeClass("active");
+    
+    //Reset Tooltips 
+    $j(".definition .active").removeClass("active").attr("style", "");
+    
+    //Reset ETF Finder Filters Overlay
+    $j("#fund_filters").removeClass("active");
+}
+function activateOverlayBg(){
+    $j(document).on("click", ".bg-overlay", function(){
+        if(!$j("#disclaimer, #subscribe, #unsubscribe, #subscribe-confirm, #subscribe-error, #unsubscribe-confirm, #unsubscribe-error, #isd, #locations, #loading, #investors").is(":visible")){
+            hideOverlayBg();
+        }
+        return false;
+    });
+    
+    $j(document).on("click", ".close-overlay, #leaving_decline, .info .btn-close, #subscribe-decline, .close-confirm, #unsubscribe-cancel, #pcf-decline", function(){
+        hideOverlayBg();
+        return false;
+    });
+}
+function disableBodyScroll() {
+    $j("body").addClass("modal-on");
+    //Fix the body overflow:hidden issue on Galaxy 6
+    var menuOpened = false;
+    if($j(".navbar-toggle").is(":visible") && $j("#spdr-navbar").is(":visible")){
+        $j("body").addClass("nav-opened");
+        menuOpened = true
+    }
+    if ($j("body").css("overflow").toLowerCase() === "hidden") {
+        var currentScrollPos = menuOpened ? 0 : $j(document).scrollTop();
+        $j('body').css({
+            'position': 'fixed',
+            'top': '-' + currentScrollPos + 'px'
+        }).data("scroll", "disabled");
+        cachedScrollPos = currentScrollPos;
+    }
+}
+function resetBodyScroll() {
+    if ($j("body").data("scroll") === "disabled") {
+        $j('body').css({
+            'position': 'static'
+        }).data("scroll", "");
+        $j('body').scrollTop(cachedScrollPos);
+    }
+    $j("body").removeClass("modal-on nav-opened");
+}
+
+function showOverlay(overlayID){
+    showOverlayBg("mask");
+    $j("#" + overlayID).addClass("active");
+    disableBodyScroll();
+    if($j("#" + overlayID).css("position").toLowerCase() !== "fixed"){
+        $j("html, body").animate({scrollTop:0},"fast");
+    }
+}
+
+function createLoadingOverlay(){
+    var bgHtml = "<div class='bg-overlay' id='bg-loading'></div>",
+        overlayHtml = "<div class='overlay' id='loading'><p><span class='icon-loading'></span>Loading...</p></div>";
+    if($j(".bg-overlay").length <= 0) {
+        $j("body").append(bgHtml);
+    }
+    $j("body").append(overlayHtml);
+    showOverlay("loading");
+}
+
+function removeLoadingOverlay(){
+    $j("#bg-loading, #loading").remove();
+}
+    
+$j(document).on("click", ".overlay-link", function(e){
+    //e.preventDefault();
+    
+    var $overlayLink = $j(this),
+        overlayID = $overlayLink.data("type"),
+        defaultOpenSection = $overlayLink.data("default-open");
+    
+    switch(overlayID){
+        case "isd":
+            loadISDContainer(true, function(){
+                showOverlay(overlayID);
+                if($overlayLink.data("current-isd") === "yes"){
+                    createDisclaimerOverlay(current_country, current_lang);
+                }else {
+                    createDisclaimerOverlay($overlayLink.data("country"), $overlayLink.data("lang"));
+                }
+                if(defaultOpenSection){
+                    $j("#isd .link-anchor").filter("[data-target='" + defaultOpenSection + "']").click();
+                }
+            });
+            
+            //$j("#insite-panel").slideUp();
+            break;
+        case "locations": 
+            loadISDContainer(true, function(){
+                showOverlay(overlayID);
+                webTrendsForGlobalOverlay('Global Locations');
+            });
+            break;
+        case "subscribe":
+            showOverlay(overlayID);
+            initializeSubscribe();
+            break;
+    }
+    
+    return false;
+});
+
+/*=== Overlay Basic End ===*/
+
+
+/*=== Global Locations & ISD Start ===*/
+var disclaimers,
+    labels,
+    isdContainerLoaded = false,
+    isLogged,
+    isForgotPasswordFirstTimeLoaded = true, //Used in the function updateForgotPasswordLabels()
+    isRegisterFirstTimeLoaded = true, //Used in the function updateRegisterLabels()
+    isInvestorType = false,
+    availableCountries = {},
+    selectedCountryURL = "",
+    selectedLang = "",
+    cookieCountry = "",
+    cookieLang = "",
+    countryKeyMap = {  //The country key is different in different places. Need to be unified from backend.
+        "de_at": "at",
+        "bel": "be",
+        "dk": "dk",
+        "fin": "fi",
+        "fra": "fr",
+        "ger": "de",
+        "ire": "ie",
+        "ita": "it",
+        "lux": "lu",
+        "nl": "nl",
+        "no": "no",
+        "por": "po",
+        "spa": "es",
+        "swe": "se",
+        "swis": "ch",
+        "uk": "gb"
+    },
+    DEFAULT_COUNTRY = "us",
+    DEFAULT_LANG = "en",
+    DEFAULT_ROLE = "";
+
+function drawDisclaimerOverlay(country, lang){
+    var heading = "",
+        langs = "",
+        sectionTitles = "",
+        massiveText = "",
+        buttons = "",
+        countryName = "",
+        locationsLink = "",
+        currLangLabels = labels.languages[lang],
+        currDisclaimer = disclaimers[lang][country],
+        length,
+        prop,
+        selectedCountryDomain;
+    
+    selectedLang = lang;
+    countryName = currLangLabels.countries[country] || availableCountries[country].name;
+    selectedCountryURL = currDisclaimer.URL;
+    selectedCountryDomain = /^((?:https?\:)?\/\/[^/]+)/i.exec(selectedCountryURL);
+    selectedCountryDomain = selectedCountryDomain ? selectedCountryDomain[1] : location.protocol + "//" + location.host;
+    heading = "<h2>" + currLangLabels.heading + " " + countryName + "</h2>";
+    locationsLink = "<a class='link-change' href='#'>" + currLangLabels.changeLocations + "</a>";
+    
+    if(currDisclaimer.termsAndCond){
+        sectionTitles = sectionTitles + "<a href='#' class='link-anchor' data-target='isd-terms-conditions'>" + currLangLabels[currDisclaimer.termsAndCond.key] + "</a>";
+        massiveText = massiveText + "<div class='section-text' id='isd-terms-conditions'><p class='section-title'>" + currLangLabels[currDisclaimer.termsAndCond.key] + "</p>" + currDisclaimer.termsAndCond.content + "</div>";
+    }
+    if(currDisclaimer.privacy){
+        sectionTitles = sectionTitles + "<a href='#' class='link-anchor' data-target='isd-privacy'>" + currLangLabels[currDisclaimer.privacy.key] + "</a>";
+        massiveText = massiveText + "<div class='section-text' id='isd-privacy'><p class='section-title'>" + currLangLabels[currDisclaimer.privacy.key] + "</p>" + currDisclaimer.privacy.content + "</div>";
+    }
+    if(currDisclaimer.hasProspectuse){
+        sectionTitles = sectionTitles + "<a href='" + selectedCountryURL.replace(/\/?$/i, "/" + lang + "/investors/") + "'>" + currLangLabels.prospectuses + " &#187;</a>";
+    }
+    if(sectionTitles !== "" || massiveText !== ""){
+        content = "<div class='disclaimer-holder clearfix'>";
+        if(sectionTitles !== ""){
+            content += "<div class='section-titles'>" + sectionTitles + "</div>";
+        }
+        if(massiveText !== ""){
+            content += "<div class='massive-text'>" + massiveText + "</div>";
+        }
+        content += "</div>";
+    }
+    if(currDisclaimer.description) {
+        content += currDisclaimer.description;
+    }
+    for(prop in disclaimers){
+        if(disclaimers[prop][country]){
+            langs = langs + "<a href='#' data-lang='" + prop + "' data-country='" + country + "'" + (prop === lang ? " class='active'" : "") + ">" + labels.languages[prop].langFullName + "</a>";
+        }
+    }
+    langs = "<span>" + currLangLabels.language + ":</span> " + langs;
+
+    
+    $j("#isd .heading-holder").html(heading + locationsLink);
+    $j("#isd .language").html(langs);
+    $j("#isd .main-holder .disclaimer-content").html(content);
+    $j("#isd .link-anchor").eq(0).click();
+    $j("#isd .location-list .region-title").each(function(){
+        $j(this).html(currLangLabels[$j(this).data("label-key")]);
+    });
+    if($j("#isd .location-list .tips").length > 0){
+        $j("#isd .location-list .tips").html(currLangLabels.visitGLP);
+    }else {
+        $j("#isd .location-list").append("<div class='tips'>" + currLangLabels.visitGLP + "</div>");
+    }
+    $j("#isd .location-list").hide();
+    
+    $j("#investorForm").attr("action", selectedCountryDomain + "/seam/resource/isdResource");
+    
+    $j("#isd .extra-item").filter("[name='investorForm:selectedKey']").val(country)
+        .end().filter("[name='investorForm:selectedLanguage']").val(lang)
+        .end().filter("[name='investorForm:selectedURL']").val(selectedCountryURL)
+        .end().filter("[name='investorForm:selectedRole']").val(currDisclaimer.role)
+        .end().filter("[name='investorForm:selectedRoleKey']").val(currDisclaimer.roleKey)
+        .end().filter("[name='investorForm:currentURL']").val(current_page);
+    
+    $j("#isd .submit-isd").html(currLangLabels.acceptButton);
+    $j("#isd .btns").show();
+    
+    if(country === "be"){
+        $j("#investorForm").attr("action", "/global/isd.seam");
+        $j("#isd .user-holder").find("[data-label-key]").each(function(){
+            $j(this).html(currLangLabels[$j(this).data("label-key")]);
+        });
+        $j("#isd .user-holder select option").each(function(){
+            var labelKey = $j(this).data("label-key");
+            if(!labelKey || labelKey === ""){
+                labelKey = $j(this).html();
+                $j(this).attr("data-label-key", labelKey);
+                $j(this).html(currLangLabels[labelKey]);
+            }
+        });
+        $j("#isd .user-holder").show();
+        if(!isLogged || isLogged === "") {
+            $j("#isd .submit-reg").html(currLangLabels.registerButton);
+            $j("#isd .submit-login").html(currLangLabels.loginButton);
+            if($j("#pane-login").hasClass("active")){
+                $j("#isd .submit-login").show();
+                $j("#isd .submit-reg").hide();
+            }else {
+                $j("#isd .submit-login").hide();
+                $j("#isd .submit-reg").show();
+            }
+            $j("#isd .submit-isd").hide();
+        }else {
+            $j("#isd .submit-isd").show();
+            $j("#isd .submit-reg, #isd .submit-login").hide();
+        }
+    }else {
+        $j("#isd .submit-isd").show();
+        $j("#isd .user-holder, #isd .submit-reg, #isd .submit-login").hide();
+    }
+}
+
+//Convert the relative URL in the text to absolute URL of the target country/lang/role
+function convertRelativeURL(text, domainURL, lang, role){
+    domainURL = domainURL || "";
+    lang = lang || DEFAULT_LANG;
+    role = role || DEFAULT_ROLE;
+    text = text.replace(/( href=\\?['"])\/?([^/].*?)(\\?['"])/ig, function(match, p1, p2, p3){
+        return p1 + domainURL.replace(/\/?$/i, "/" + lang + "/" + role + "/" + p2) + p3;
+    });
+    return text;
+}
+
+function convertDisclaimerData(data){
+    var result = {},
+        countryListResult = {},
+        associations = data.roleLocaleAssociations,
+        i,
+        j,
+        iLen,
+        jLen,
+        association,
+        countryItem,
+        lang,
+        langName,
+        countryKey,
+        contentItem,
+        contentKey,
+        contentValue,
+        contentValueText;
+    for(i = 0, iLen = associations.length; i < iLen; i++){
+        association = associations[i];
+        lang = association.locale.language.key;
+        langName = association.locale.language.value;
+        result[lang] = result[lang] || {"name": langName};
+        countryItem = {
+            "disclaimerContent": [],
+            "insitePanel": {}
+        };
+        countryKey = association.locale.domain.countryKey;
+        countryKey = countryKey.toLowerCase();
+        
+        countryItem.isDefault = association.locale.isDefault;
+        countryItem.countryName = association.locale.domain.description;
+        countryItem.URL = association.locale.domain.domainUrl;
+        countryItem.role = association.domainRole.role.value;
+        countryItem.roleKey = association.domainRole.role.key;
+        
+        for (j = 0, jLen = association.contents.length; j < jLen; j++){
+            contentItem = association.contents[j];
+            contentKey = contentItem.contentType.key;
+            contentValue = contentItem.content;
+            //If user edits the text to "Default" in the IBG Tools, the content will include some html tags, such as "<p>Default</p>".
+            contentValueText = $j("<div>" + contentValue + "</div>").text(); 
+            if(!/^\s*(?:Default)?\s*$/.test(contentValueText)){
+                switch(contentKey){
+                    case "ISD_SED":
+                        countryItem.description = convertRelativeURL(contentValue, countryItem.URL, lang, countryItem.role);
+                        break;
+                    case "TermsAndCond":
+                        //Change Relative links to Absolute URLs
+                        contentValue = convertRelativeURL(contentValue, countryItem.URL, lang, countryItem.role);
+                        countryItem.termsAndCond  = {
+                            "key": contentKey,
+                            "content": contentValue
+                        };
+                        break;
+                    case "privacy":
+                        //Change Relative links to Absolute URLs
+                        contentValue = convertRelativeURL(contentValue, countryItem.URL, lang, countryItem.role);
+                        countryItem.privacy = {
+                            "key": contentKey,
+                            "content": contentValue
+                        };
+                        break;
+                    case "404_general_inpanel":
+                    case "404_notfund_inpanel":
+                    case "ISD_ISCM":
+                    case "ISD_ISGM":
+                        countryItem.insitePanel[contentKey] = contentValue;
+                        break;
+                    case "ISD_ISPM":
+                        countryItem.investorsDisclaimer = contentValue;
+                        break;
+                }
+            }
+        }
+        
+        if(countryKey !== "be" && countryKey !== "us"){
+            countryItem.hasProspectuse = true;
+        }
+        
+        result[lang][countryKey] = countryItem;
+        countryListResult[countryKey] = countryListResult[countryKey] || {
+            "name": association.locale.domain.description,
+            "region": association.locale.domain.region
+        };
+        if(countryKey === cookieCountry){
+            countryListResult[countryKey].url = countryItem.URL.replace(/\/?$/i, "/" + cookieLang) + (countryItem.roleKey === "PROF" ? "/" + countryItem.role : "");
+        }else if(countryItem.isDefault) {
+            countryListResult[countryKey].url = countryItem.URL.replace(/\/?$/i, "/" + lang) + (countryItem.roleKey === "PROF" ? "/" + countryItem.role : "");
+        }
+    }
+    
+    //console.log(result);
+    return {
+        "disclaimers": result,
+        "availableCountries": countryListResult
+    };
+}
+
+function getLanguageByCountry(country){
+    var lang;
+    if(selectedLang && selectedLang !== "" && disclaimers[selectedLang][country]){
+        return selectedLang;
+    }else {
+        for(lang in disclaimers){
+            if(disclaimers[lang][country] && disclaimers[lang][country].isDefault === true){
+                return lang;
+            }
+        }
+    }
+}
+
+function createDisclaimerOverlay(country, lang){
+    if(!(country)){
+        return false;
+    }
+    
+    country = country.toLowerCase();
+    
+    if(!lang){
+        lang = getLanguageByCountry(country);
+    }
+    lang = lang.toLowerCase();
+    drawDisclaimerOverlay(country, lang);
+}
+
+function drawLocationList(){
+    var countries = labels.isdCountries,
+        middle = 0,
+        emeaList = "",
+        emeaListItem,
+        emeaArr = [],
+        naList = "",
+        naListItem,
+        naArr = [],
+        labelsByLang,
+        countryCode,
+        countryName,
+        i;
+
+    for(countryCode in availableCountries){
+        countryName = countries[countryCode] || labels.languages[current_lang].countries[countryCode] || availableCountries[countryCode].name;
+        if(availableCountries[countryCode].region === "North America"){
+            //North America Countries
+            if(cookieCountry === countryCode && !isInvestorType) {
+                naListItem = "<li><a class='reload-page' href='" + current_page + "'>" + countryName + "</a></li>";
+            }else {
+                naListItem = "<li><a class='overlay-link' href='" + availableCountries[countryCode].url + "' data-country='" + countryCode + "' data-type='isd'>" + countryName + "</a></li>";
+            }
+            naArr.push({
+                name: countryName,
+                code: naListItem
+            });
+        }else if(availableCountries[countryCode].region === "Europe") {
+            //EMEA Countries
+            if(cookieCountry === countryCode && !isInvestorType) {
+                emeaListItem = "<li><a class='reload-page' href='" + current_page + "'>" + countryName + "</a></li>";
+            }else if(countryCode === "be" && current_country !== "be"){
+                emeaListItem = "<li><a class='clear-isd-cookie' href='" + availableCountries[countryCode].url + "'>" + countryName + "</a></li>";
+            }else {
+                emeaListItem = "<li><a class='overlay-link' href='" + availableCountries[countryCode].url + "' data-country='" + countryCode + "' data-type='isd'>" + countryName + "</a></li>";
+            }
+            
+            emeaArr.push({
+                name: countryName,
+                code: emeaListItem
+            });
+        }
+    }
+    
+    naArr = naArr.sort(function(a, b){
+        return a.name.localeCompare(b.name);
+    });
+    
+    for(i = 0; i < naArr.length; i++){
+        naList += naArr[i].code;
+    }
+    
+    emeaArr = emeaArr.sort(function(a, b){
+        return a.name.localeCompare(b.name);
+    });
+    
+    middle = Math.ceil(emeaArr.length / 2);
+    emeaList += "<ul class='list-col'>";
+    for(i = 0; i < emeaArr.length; i++){
+        if(i === middle){
+            emeaList += "</ul><ul class='list-col'>";
+        }
+        emeaList += emeaArr[i].code;
+    }
+    emeaList += "</ul>";
+    
+    $j("#isd .region.emea, #locations .region.emea").append(emeaList);
+    $j("#isd .region.na .list-col, #locations .region.na .list-col").html(naList);
+    
+    labelsByLang = labels.languages[current_lang];
+    
+    $j("#locations .region-title").each(function(){
+        $j(this).html(labelsByLang[$j(this).data("label-key")]);
+    });
+    
+    $j("#locations .content").prepend("<p>" + labelsByLang.selectLocation + "</p>");
+    $j("#locations .content").append("<div class='tips'>" + labelsByLang.visitGLP + "</div>");
+}
+
+function loadISDContainer(isOverlayOpening, callback){
+    if(!callback || typeof callback !== "function"){
+        callback = function(){};
+    }
+    
+    if(isdContainerLoaded){
+        callback();
+    }else {
+        if(isOverlayOpening){
+            createLoadingOverlay();
+        }
+        
+        $j.get("/global/isd.seam",function(data){
+            if($j("#bg-loading").length <= 0 && isOverlayOpening){
+                data = data.replace(/<div\s*class=(?:"|')bg-overlay(?:"|')>\s*<\/div>/, "");
+            }
+            $j("body").append(data);
+            labels = $j.parseJSON($j("#labels-json").val());
+            
+            $j.get("/seam/resource/restApi/cdn/role/local/association.json", function(data){
+                isdContainerLoaded = true;
+                removeLoadingOverlay();
+                data = convertDisclaimerData(data);
+                disclaimers = data.disclaimers;
+                availableCountries = data.availableCountries;
+                drawLocationList();
+                callback();
+            }, "json").fail(function(jqXHR, textStatus){
+                console.log(textStatus);
+            });
+            
+            $j("#isd").on("click", ".language a", function(e){
+                e.preventDefault();
+                if(!$j(this).hasClass("active")){
+                    createDisclaimerOverlay($j(this).data("country"), $j(this).data("lang"));
+                }
+            });
+            
+            $j("#isd").on("click", ".link-change", function(e){
+                e.preventDefault();
+                $j("#isd .location-list").slideToggle();
+            });
+            
+            $j("#isd").on("click", ".link-anchor", function(e){
+                e.preventDefault();
+                var target = $j(this).data("target"),
+                    $target = $j("#" + target);
+                $j(this).siblings().removeClass("active");
+                $target.siblings().removeClass("active");
+                $target.addClass("active");
+                $j(this).addClass("active");
+                $target.closest(".massive-text").scrollTop(0);
+            });
+            
+            $j("#isd").on("click", ".submit-isd", function(e){
+                e.preventDefault();
+                $j("#investorForm").submit();
+            });
+            
+            $j("#isd").on("click", ".action-links a", function(e){
+                e.preventDefault();
+                var targetComp = $j(this).data("comp");
+                $j("#isd .user-holder .login-comp").removeClass("active");
+                $j("#" + targetComp).addClass("active");
+                
+                if(targetComp !== "comp-login"){
+                    $j("#isd .submit-login").addClass("disabled");
+                }else {
+                    $j("#isd .submit-login").removeClass("disabled");
+                }
+            });
+            
+            $j("#isd .toggler").on("click", function(e){
+                e.preventDefault();
+                $j(this).next("div").slideToggle();
+                $j(this).toggleClass("active");
+            });
+            
+            $j("#isd .tabs").on("click", "li", function(){
+                if(!$j(this).hasClass("active")){
+                    var pane = $j(this).attr("data-pane");
+                    $j(this).addClass("active").siblings(".active").removeClass("active");
+                    $j("#" + pane).addClass("active").siblings(".active").removeClass("active");
+                    
+                    var selText = $j(this).find("a").text();
+                    $j(this).parents(".tab-select").find(".select-filed-input").text(selText);
+                }
+                
+                $j(this).parent().removeClass("in");
+                
+                return false;
+            });
+            
+            $j("#isd .user-holder .tab-link-reg").on("click", function(e){
+                $j("#isd .submit-isd, #isd .submit-login").hide();
+                $j("#isd .submit-reg").show();
+            }); 
+            
+            $j("#isd .user-holder .tab-link-login").on("click", function(e){
+                $j("#isd .submit-login").show();
+                $j("#isd .submit-reg, #isd .submit-isd").hide();
+                back2login();
+            }); 
+            
+            
+        }).fail(function(jqXHR, textStatus){
+            console.log(textStatus);
+        });
+    }
+}
+
+function getURLParameterByName(name, url){
+    var search = url || window.location.search,
+        regex = new RegExp("[?&]" + name + "=([^&;#]*)"),
+        result = regex.exec(search);
+    return result ? result[1] : null;
+}
+
+function getCountryAndLangFromURL(url){
+    //PROD URL: https://uk.spdrs.com/en/professional/
+    //Not-PROD URL: https://spdrseurope-newdev.ssga.statestr.com/<COUNTRY_CODE>/<language_code>/<role>
+    var country, 
+        lang,
+        regexpPRD = /^(?:https?\:)?(?:\/\/)?([^/]{2})\.spdrs\.com(?:\/([^/]{2}))?(?:[/#?]|$)/i,
+        regexpNotPRD = /^(?:https?\:)?(?:\/\/)?[^/]+(?:\/([^/]{2}))?(?:\/([^/]{2}))?(?:[/#?]|$)/i,
+        regexpResult;
+    url = url || current_page;
+    
+    regexpResult = regexpPRD.exec(url) || regexpNotPRD.exec(url);
+    
+    if(regexpResult) {
+        country = regexpResult[1];
+        lang = regexpResult[2];
+    
+        country = country ? country.toLowerCase() : country;
+        lang = lang ? lang.toLowerCase() : lang;
+        
+        if(countryKeyMap[country]){
+            country = countryKeyMap[country];
+        }
+    }
+    
+    return {
+        "country": country,
+        "lang": lang
+    };
+}
+
+function getGeoCookies(){
+    var geoCookies = $j("#geolocCookie").val(),
+        country,
+        lang;
+    if(geoCookies && geoCookies !== ""){
+        geoCookies = geoCookies.split(":");
+        country = geoCookies[0];
+        lang = geoCookies[1];
+        
+        country = country ? country.toLowerCase() : country;
+        lang = lang ? lang.toLowerCase() : lang;
+        
+        if(countryKeyMap[country]){
+            country = countryKeyMap[country];
+        }
+        
+        cookieCountry = country;
+        cookieLang = lang;
+    }
+}
+
+function getPageCountryAndLang(){
+    var country,
+        lang,
+        obj;
+        
+    getGeoCookies();
+    
+    country = cookieCountry;
+    lang = cookieLang;
+    
+    if(!country){
+        obj = getCountryAndLangFromURL();
+        country = obj.country;
+        lang = obj.lang;
+    }
+    
+    if(country) {
+        lang = lang || DEFAULT_LANG;
+    }else {
+        country = DEFAULT_COUNTRY;
+        lang = DEFAULT_LANG;
+    }
+    
+    current_country = country;
+    current_lang = lang;
+    selectedLang = lang;
+}
+
+
+/* Invoked when password reset successful from backend*/
+function back2login() {
+    $j("#isd .user-holder .login-comp").removeClass("active");
+    $j("#comp-login").addClass("active");
+    $j("#isd .submit-login").removeClass("disabled");
+}
+
+/* Forgot Password has several AJAX call steps which only return labels in Engligh. 
+ * So Need to update the labels for different ISD languages.
+ * Invoked in the HTML pieces of each step.*/
+function updateForgotPasswordLabels() {
+    if(!isForgotPasswordFirstTimeLoaded){
+        var isdLang = $j("#isd .language a.active").data("lang"),
+            labelsByLang = labels.languages[isdLang];
+        $j("#comp-password").find("[data-label-key]").each(function(){
+            $j(this).html(labelsByLang[$j(this).data("label-key")]);
+        });
+    }
+    isForgotPasswordFirstTimeLoaded = false;
+}
+
+/* Register Ajax Call only return labels in Engligh. 
+ * So Need to update the labels for different ISD languages.
+ * Invoked in the HTML pieces of each step.*/
+function updateRegisterLabels() {
+    if(!isRegisterFirstTimeLoaded){
+        var isdLang = $j("#isd .language a.active").data("lang"),
+            labelsByLang = labels.languages[isdLang];
+        $j("#pane-register").find("[data-label-key]").each(function(){
+            $j(this).html(labelsByLang[$j(this).data("label-key")]);
+        });
+        
+        $j("#pane-register select option").each(function(){
+            var labelKey = $j(this).data("label-key");
+            if(!labelKey || labelKey === ""){
+                labelKey = $j(this).html();
+                $j(this).attr("data-label-key", labelKey);
+                $j(this).html(labelsByLang[labelKey]);
+            }
+        });
+    }
+    isRegisterFirstTimeLoaded = false;
+}
+
+function createInsitePanel(insiteContentType, targetURL){
+    if(insiteContentType === "ISD_ISCM" && targetURL){
+        var urlObj = getCountryAndLangFromURL(targetURL),
+            targetCountryKey = getCountryAndLangFromURL(targetURL).country;
+        if(!targetCountryKey){
+            return false;
+        }
+    }
+    
+    var $insitePanel = $j("#insite-panel"),
+        $content = $j("<div></div>");
+        
+    if($insitePanel.length <= 0){
+        $j("#SPDR_header").append("<div id='insite-panel' class='inactive'><div class='container'><a class='btn-close' href='#'></a><div class='content'></div></div></div>");
+        $insitePanel = $j("#insite-panel");
+        $insitePanel.on("click", ".btn-close, .close-panel", function(e){
+            e.preventDefault();
+            $j("#insite-panel").slideUp();
+            hideOverlayBg();
+        });
+    }
+    
+    $j.get("/seam/resource/restApi/cdn/role/local/association.json", function(data){
+        var insitePanels = convertDisclaimerData(data),
+            content = insitePanels.disclaimers[current_lang][current_country].insitePanel[insiteContentType];
+        if(content){
+            if(insiteContentType === "ISD_ISCM" && targetURL){
+                $j.get("/global/isd.seam",function(data){
+                    var labelStr = $j("<div>" + data + "</div>").find("#labels-json").val(),
+                        labels = $j.parseJSON(labelStr),
+                        countryListByLang = labels.languages[current_lang].countries,
+                        targetCountry = countryListByLang[targetCountryKey],
+                        currentCountry = countryListByLang[current_country],
+                        links = "";
+                    content = content.replace(/\${user\.cookie\.country}/g, currentCountry);
+                    content = content.replace(/\${user\.url\.country}/g, targetCountry);
+                    $content = $content.html(content);
+                    $content.find("a").each(function(){
+                        var text = $j(this).html();
+                        if(text.indexOf("${accept}") > -1){
+                            if(targetCountryKey === "be"){
+                                $j(this).html(text.replace("${accept}", "")).attr("href", insitePanels.availableCountries[targetCountryKey].url).addClass("clear-isd-cookie");
+                            }else {
+                                $j(this).html(text.replace("${accept}", "")).addClass("overlay-link").attr({"href": insitePanels.availableCountries[targetCountryKey].url, "data-type": "isd", "data-country": targetCountryKey});
+                            }
+                        }else if(text.indexOf("${reject}") > -1){
+                            $j(this).html(text.replace("${reject}", "")).addClass("close-panel");
+                        }
+                    });
+                    
+                    $insitePanel.find(".content").html($content.html());
+                    $insitePanel.removeClass("inactive");
+                }).fail(function(jqXHR, textStatus){
+                    console.log(textStatus);
+                });
+            }else {
+                $content = $content.html(content);
+                $insitePanel.find(".content").html($content.html());
+                $insitePanel.removeClass("inactive");
+            }
+        }
+    }, "json").fail(function(jqXHR, textStatus){
+        console.log(textStatus);
+    });
+}
+
+$j(document).on("click", ".clear-isd-cookie", function(e){
+    e.preventDefault();
+    var url = $j(this).attr("href");
+    $j.get("/seam/resource/isdResource?from=clear", function(data){
+        window.location = url;
+    }).fail(function(jqXHR, textStatus){
+        console.log(textStatus);
+        window.location = url;
+    });
+});
+
+$j(document).on("click", ".reload-page", function(e){
+    e.preventDefault();
+    window.location.reload();
+});
+
+/*=== Global Locations & ISD End ===*/
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////// DOM READY ///////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*work around for custom page video description, please remove when function success*/
+function workaroundVideo(){
+	$j("#custom a.video_link").each(function(){
+		var description = $j(this).attr("data-description");
+		$j(this).parent().append(description);
+	 });
+}
+
+$j(document).ready(function() {
+	//createLoginFcc();
+	
+    /*== ISD Overlay / Insite Panel Start ==*/
+    getPageCountryAndLang();
+    activateOverlayBg();
+	//workaroundVideo();
+	
+    var insiteContentType = $j("#insiteContentType").val();
+    if(insiteContentType && insiteContentType !== ""){
+        var insiteTypeData = insiteContentType.split(";");
+        if(insiteTypeData[0] !== "ISD_ISCM"){
+            createInsitePanel(insiteTypeData[0], insiteTypeData[1]);
+        }
+    }
+    /*== ISD Overlay / Insite Panel End ==*/
+
+    $j('a.linkin').each(function() {
+        $j(this).attr('href', "https://www.linkedin.com/company/3753854");
+    });
+    
+	addReturnLinktoLandingPage();
+
+	if ($j("#home").length > 0) {
+		$j("#SPDR_nav a.tab").addClass("active");
+		//$j("div.styled_link").html('<a href="http://blog.spdrs.com/" target=_blank"><img src="/site-content/images/icon_blog_C.png">Access the latest insights on <strong>SPDR Blog &raquo;</strong></a>');
+	} else if (/\/product\//.test(current_page)) {
+		if (current_page.indexOf("?ticker=GLD") != -1) {
+			$j("#tabs a.holdings").hide();
+			//$j("div.net_asset a:contains('Most Recent NAV')").remove();
+		}
+
+		if (current_page.indexOf("?ticker=SMLV") != -1 || current_page.indexOf("?ticker=LGLV") != -1) {
+			$j("h2:contains('Performance Graphs'), #detail_performance").remove();
+			
+		}
+
+		if (current_page.indexOf("?ticker=TOTL") != -1) {
+			$j(".documents h2").each(function() {
+				var txtstrng = $j(this).text();
+				if (/Reports/.test(txtstrng)) {
+					$j(this).next().children("a.video_link").hide();
+				}
+			});
+		}
+		$j("#menu_ETFs").addClass("active");
+	} else if (current_page.indexOf("/tools/") != -1) {
+		$j("#menu_Tools").addClass("active");
+	} else if (current_page.indexOf("/resources/") != -1) {
+		$j("#menu_ETFs").addClass("active");
+	} else if (current_page.indexOf("/commentary/") != -1) {
+		$j("#menu_Commentary").addClass("active");
+	} else if (current_page.indexOf("/advisor-education/") != -1) {
+		$j("#menu_Education").addClass("active");
+	} else if (current_page.indexOf("/institutional/") != -1) {
+		$j("#menu_Institutional").addClass("active");
+	} else if(current_page.indexOf("/ad/shecan") != -1){
+		$j('.publications').css('margin', '0');
+		$j('#category_landing').addClass('no_landingimg');
+		$j('#category_landing #col_left').html('<div id="promo_text"></div>');
+		$j('<img src="/site-content/images/ID6050_SPDR-landing-sidebar_v4_ts.png" style="position:absolute;bottom:0;left:0;" />').appendTo('#category_landing');
+	}else if(current_page.indexOf("/ad/bond_uncertainty_market") != -1){
+		$j('<img src="/site-content/images/BMU_sidebar2.jpg" style="position:absolute;top:0;left:0;" />').appendTo('#category_landing');
+	} else if(current_page.toLowerCase().indexOf("/ad/gld") != -1){
+		$j('#category_landing').css('background-image','url(/site-content/images/bg_landing_promo_gold.png)');
+		$j('#category_landing #col_left #promo_text').css('background-color', 'transparent');
+		$j('<img src="/site-content/images/ID6190_GLD-sidebar_v5_ts.png" style="position:absolute;top:0;left:0;" />').appendTo('#category_landing');
+	} else if(current_page.indexOf("/ad/fossilfuelfree") != -1){
+		$j('.publications').css('margin', '0');
+		$j('#category_landing').css('background-image','none');
+		$j('#category_landing #col_left #promo_text').css('background-color', '#cdcdcd');
+		$j('<img src="/site-content/images/Fossil_Fuel_Free_Sidebar.png " style="position:absolute;bottom:0;left:0;" />').appendTo('#category_landing');
+	}
+	/* else if(/invthemes2014_/.test(current_page)){
+	 $j("#category_landing #col_right").prepend("<a href='http://www.spdr-etfs.com/investingspotlight' class='micro_link'>Return to Investing Spotlight</a>");
+	 }*/
+	else {
+	}
+
+	$j("#capitalGains #controls_links a:contains('View All')").remove();
+    
+    //Remove the "Print Selected Tab" link on the Fund Detail Page temporarily
+    $j("#detail #controls_links .btn_print").remove();
+    
+    //Remove the "Download Excel" link on the Dividend Distributions Page temporarily.
+    //Use several parent selectors to avoid removing the links on other pages.
+    $j("#etfSection .pageheader #normal .excel").remove();
+
+	if ($j("#detail").length > 0 & /^#.+/.test(current_anchor)) {
+		var tab = current_anchor.substr(1);
+		if ($j("#tabs ." + tab).length > 0) {
+			if (tab == "performance" || tab == "holdings") {
+				createCharts($j('div.' + tab));
+			}
+			$j("#tabs ." + tab).click();
+		}
+	}
+
+	$j("#etf_finder_open").click(function() {
+		if ($j(this).hasClass("closeit")) {
+			$j(this).removeClass("closeit");
+			$j("#etf_finder").hide();
+			$j("#col_left h1,#etf_lists,#featured_events,#styled_links,#popular_downloads,#col_right").show();
+		} else {
+			$j(this).addClass("closeit");
+			if (findered == false) {
+				$j("div.knob").each(function() {
+					$j(this).append("<span></span>");
+				});
+				var etfheight = $j("#etf_finder").height();
+				$j("#etf_finder").show().css("height", "0px").animate({
+					height : etfheight
+				}, 400, function() {
+					$j("#etf_finder").css("height", "auto");
+					$j.ajax({
+						url : "/product/data/expandedFundSearch.seam",
+						dataType : "xml",
+						error : function() {
+						},
+						success : function(xml) {
+							write_finder(xml);
+						}
+					});
+				});
+			} else {
+				$j("#etf_finder").show();
+			}
+			$j("#col_left h1,#etf_lists,#featured_events,#styled_links,#popular_downloads,#col_right").hide();
+			return false;
+		}
+	});
+
+	if ($j("span.year").length > 0) {
+		$j("span.year").html(thisYear);
+	}
+
+	if ($j("#findContact").length > 0) {
+		$j("#tabContents div.tabContent:first").show();
+	}
+
+	/**
+		When user click on the login button, on top of the page
+		There will be an iframe overlay pop up
+	*/
+	
+
+	$j("#controls_links a.btn_quicklinks").click(function() {
+		$j("div.menu_list").hide();
+		$j("a.submenu_link").removeClass("activated");
+		$j("a.menu_link").removeClass("viewing");
+		$j("a#login_link").removeClass("active");
+		$j("div.definition").removeClass("hinting");
+		$j("#SPDR_login").hide();
+		if ($j(this).hasClass("active")) {
+
+			$j("#overlay_area").height("auto").hide();
+			$j(this).removeClass("active").css("z-index", "0");
+			;
+			$j("div.quicklinks").hide();
+		} else {
+			$j("#overlay_area div").hide();
+			$j("#overlay_area").height($j(document).height()).show();
+			$j(this).addClass("active").css("z-index", "8");
+			;
+			$j("div.quicklinks").show();
+		}
+		return false;
+	});
+
+	$j("a.btn_print").click(function() {
+		window.print();
+	});
+
+	$j("#SPDR_nav").on("click", "a.menu_link", function() {
+		$j(this).removeAttr("style");
+		$j("a#login_link").removeClass("active");
+		$j("#SPDR_login").hide();
+		$j("a.btn_quicklinks").removeClass("active").css("z-index", "0");
+		;
+		$j("div.quicklinks").hide();
+		$j("div.definition").removeClass("hinting");
+		if ($j(this).hasClass("viewing")) {
+			$j("#overlay_area").height("auto").hide();
+			$j("div.subsubmenu_lists").hide();
+			$j(this).next("div").hide();
+			$j(this).removeClass("viewing");
+		} else {
+			$j("#overlay_area div").hide();
+			$j("#overlay_area").height($j(document).height()).show();
+			$j("div.subsubmenu_lists").show();
+			$j("div.menu_list").hide().removeClass("fullwidth");
+			$j("div.menu_list .menu_spaces,div.menu_list .menu_shadow").css("height", "auto");
+			$j("a.submenu_link").removeClass("activated");
+			$j("div.submenu_list,div.submenu_list a").removeClass("active");
+			$j("a.menu_link").removeClass("viewing");
+			$j(this).next().show();
+			$j(this).addClass("viewing");
+		}
+		return false;
+	});
+
+	$j("#SPDR_nav").on("click", "a.submenu_link", function() {
+		$j(this).next().children("div.subsubmenu_lists").children("div").show();
+		$j(this).next().children(".subsubmenu_links").children("a").removeClass("active");
+		if ($j(this).next().hasClass("activated")) {
+		} else {
+			$j("a.submenu_link").removeClass("activated");
+			$j(this).addClass("activated");
+			$j("#menu_ETFs div.menu_list").addClass("fullwidth");
+			$j("div.submenu_list").removeClass("active");
+			$j(this).next().addClass("active");
+		}
+
+		if ($j.browser.msie && $j.browser.ie7) {
+		} else {
+			$j("#menu_ETFs .menu_spaces,#menu_ETFs .menu_shadow").css("height", "auto");
+		}
+		if ($j(this).next().children(".subsubmenu_lists").outerHeight(true) > $j("#menu_ETFs .menu_spaces").height()) {
+			$j("#menu_ETFs .menu_spaces").height($j(this).next().children(".subsubmenu_lists").outerHeight(true));
+		}
+		return false;
+	});
+
+	$j("#SPDR_nav").on("click", "div.submenu_list .subsubmenu_links a", function() {
+		var notoshow = $j(this).index() + 2;
+		$j(this).parent().next().children("div").hide();
+		$j(this).parent().next().children(":nth-child(" + notoshow + ")").show();
+		$j(this).parent().children("a").removeClass("active");
+		$j(this).addClass("active");
+		if ($j.browser.msie && $j.browser.ie7) {
+		} else {
+			$j("#menu_ETFs .menu_spaces").css("height", "auto");
+		}
+		if ($j(this).parent().next().outerHeight() > $j("#menu_ETFs .menu_spaces").height()) {
+			$j("#menu_ETFs .menu_spaces").height($j(this).parent().next().outerHeight(true));
+		}
+		return false;
+	});
+
+	$j("#overlay_area").click(function() {
+		storedLink = storedDefault;
+		$j("#overlay_area").height("auto").hide();
+		$j("#SPDR_nav a.tab").removeAttr("style");
+		$j("a.btn_quicklinks").removeClass("active").css("z-index", "0");
+		$j("div.menu_list").hide().removeClass("fullwidth");
+		$j("div.menu_list").children(".menu_shadow, .menu_spaces").css("height", "auto");
+		$j("div.menu_list a,div.menu_list div,a#login_link").removeClass("active");
+		$j("a.menu_link").removeClass("viewing");
+		$j("div.definition").removeClass("hinting");
+		$j("a.submenu_link").removeClass("activated");
+		$j("#overlay_area div,#SPDR_login,div.quicklinks,div.overlay_content").hide();
+		$j("#sitesearch").slideUp();
+		$j("#searchBtn").removeClass("active");
+		$j("#dynamic_content").remove();
+	});
+
+	//clears all inputs
+	$j("a#clear_all").click(function() {
+		if ($j(this).hasClass("inactive")) {
+		} else {
+			$j("#table_lists input:checkbox").each(function() {
+				this.checked = false;
+			});
+			$j("#table_lists input:text").each(function() {
+				$j(this).val("0").removeClass("over0");
+			});
+			$j(".actions a.btn_form").addClass("inactive");
+			$j(this).addClass("inactive");
+		}
+		$j("#table_lists input").removeAttr("disabled");
+		return false;
+	});
+
+	//closes all categories
+	$j("#prospectus_thx a.btn_form").click(function() {
+		$j("#prospectus_thx").hide();
+		$j("a#clear_all").click();
+		$j("a#close_all").click();
+		$j("#prospectus").show();
+		return false;
+	});
+
+	$j("#table_lists input:checkbox").click(function() {
+		if ($j("#allholdings").length > 0) {
+			if (this.checked == false) {
+				if ($j("#table_lists input:checked").length == 0) {
+					$j("th.f_document a.btn_form").addClass("inactive");
+				}
+			} else {
+				$j("th.f_document a.btn_form").removeClass("inactive");
+			}
+		} else {//this will be the prospectus page
+			if (this.checked == false) {
+				$j(this).next().val("0").removeClass("over0");
+				if ($j("#table_lists input:checked").length == 0 && $j("#table_lists input.over0").length == 0) {
+					$j(".actions a.btn_form").addClass("inactive");
+					$j("#clear_all").addClass("inactive");
+				}
+			} else {
+				$j(this).next().val("1").addClass("over0");
+				$j(".actions a,#clear_all").removeClass("inactive");
+			}
+		}
+		if (current_page.indexOf('downloadAll=true') == -1) {
+			if ($j("#table_lists input:checked").length == 6) {
+				$j("#table_lists input").not(":checked").attr("disabled", "disabled");
+			} else {
+				$j("#table_lists input").removeAttr("disabled");
+			}
+		}
+	});
+	
+	/*Capital page checkbox*/
+	$j("#capitalGains input:checkbox").click(function() {
+		if (this.checked == false) {
+			if ($j("#capitalGains input:checked").length == 0) {
+				$j("#controls_links a.download").addClass("inactive");
+			}
+		} else {
+			$j("#controls_links a.download").removeClass("inactive");
+		}
+	});
+
+	$j("#table_lists input:text").blur(function() {
+		if ($j(this).val() != "0" && $j(this).val() != "") {
+			$j(this).addClass("over0");
+			$j(".actions a,#clear_all").removeClass("inactive");
+		} else {
+			$j(this).removeClass("over0");
+			$j(this).prev().removeAttr("checked");
+		}
+		if ($j(this).val() == "") {
+			$j(this).val("0");
+		}
+		if ($j("#table_lists input:checked").length == 0 && $j("#table_lists input.over0").length == 0) {
+			$j(".actions a.btn_form,#clear_all").addClass("inactive");
+		}
+
+	});
+
+	// setting empty value to 0
+	$j("#table_lists input:text").focus(function() {
+		if ($j(this).val() == "0") {
+			$j(this).val("");
+		}
+	});
+
+	// numerical only for mail order input
+	$j("#table_lists input.mail_order").keydown(function(e) {
+		if (e.shiftKey || e.ctrlKey || e.altKey) {
+			e.preventDefault();
+		} else {
+			var n = e.keyCode;
+			if (!((n >= 8 && n <= 9) || (n == 46) || (n >= 35 && n <= 40) || (n >= 48 && n <= 57) || (n >= 96 && n <= 105))) {
+				e.preventDefault();
+			}
+		}
+	});
+
+	$j(".actions a.mail_order").click(function() {
+		if ($j(this).hasClass("inactive")) {
+		} else {
+			$j("h1").addClass("hrzl");
+			$j("#table_lists tr").each(function() {
+				var f_ticker = $j(this).attr("id");
+				var fund_name = "<td class='f_name'>" + $j(this).children('.f_name').html() + "</td>";
+				var fund_summary = "<td class='f_summary'>" + $j(this).children('.f_summary').children('input.mail_order').val() + "</td>";
+				var fund_prospectus = "<td class='f_prospectus'>" + $j(this).children('.f_prospectus').children('input.mail_order').val() + "</td>";
+				var fund_factsheet = "<td class='f_factsheet'>" + $j(this).children('.f_factsheet').children('input.mail_order').val() + "</td>";
+				var fund_SAI = "<td class='f_SAI'>" + $j(this).children('.f_SAI').children('input.mail_order').val() + "</td>";
+				var fund_semiannual = "<td class='f_semiannual'>" + $j(this).children('.f_semiannual').children('input.mail_order').val() + "</td>";
+				var fund_annual = "<td class='f_annual'>" + $j(this).children('.f_annual').children('input.mail_order').val() + "</td>";
+				var orderedfund = false;
+				$j(this).find("input.mail_order").each(function() {
+					if ($j(this).val() != "0") {
+						orderedfund = true;
+					}
+				});
+				if (orderedfund == true) {
+					$j("#table_order tbody").append("<tr id='" + f_ticker + "'>" + fund_name + fund_summary + fund_prospectus + fund_factsheet + fund_SAI + fund_semiannual + fund_annual + "</tr>");
+				}
+			});
+			$j("#table_order td").each(function() {
+				if ($j(this).html() == "undefined") {
+					$j(this).html("n/a");
+				}
+				if ($j(this).html() != "0" && $j(this).html() != "n/a") {
+					$j(this).addClass("over0");
+				}
+			});
+			setCallback();
+			$j("#prospectus").hide();
+			$j("#prospectus_order").show();
+		}
+	});
+
+	$j(".actions a.download").click(function() {
+		if ($j(this).hasClass("inactive")) {
+		} else {
+
+			$j("#table_lists tr input.download").each(function() {
+				var f_ID = $j(this).parent().parent().attr("id");
+				var d_type = $j(this).parent().attr("class");
+				d_type = d_type.substring(2);
+				if ($j(this).attr("checked") == "checked") {
+					prospectus_order.push(f_ID + "_" + d_type);
+				}
+			});
+		}
+	});
+
+	$j("#download_all").click(function() {
+		$j("#table_lists input").attr('checked', 'checked');
+		$j("#table_headers .btn_form").removeClass("inactive").click();
+		//$j('[id="j_id5:download"]').click();
+	});
+
+	if ($j("#prospectus").length > 0) {
+
+		$j("#actions_top .download").html($j("#actions_top .download").html().replace("Check items to download, and click download", "<strong>Limited to 6 documents per Download</strong>"));
+
+		/* uncomment line below to disable download prospectus functionality */
+		//$j("#actions_top .download").html("Sorry, the download functionality is not available at this time");
+
+	}
+
+	$j("a.edit_order").click(function() {
+		$j("h1").removeClass("hrzl");
+		$j("#prospectus_order").hide();
+		$j("#prospectus").show();
+		$j("#table_order tbody").html("");
+	});
+	
+	if ($j(".module_carousel").length > 0) {
+		load_carousel();
+	}
+
+	if ($j(".module_spotlight").length > 0) {
+		write_promos();
+	}
+
+  $j(".module_featured table th a,.benchmarks th a").click(function() {
+            var sortOn = $j(this).parent().attr("class"),
+                $curr_table = $j(this).closest("table"),
+                sort_order = $j(this).hasClass("asc") ? "desc" : "asc";
+            $curr_table.find("tbody tr").tsort("td." + sortOn, {order:sort_order});
+            $curr_table.find("thead th a").removeClass("asc desc");
+            $j(this).addClass(sort_order);
+            return false;
+        });
+
+	$j(".module_tabs a").each(function(){
+		if(precise_page_url === $j.trim($j(this).attr("href"))){
+			$j(this).addClass("active");
+		}
+	});
+
+
+	if ($j("#viewall").length > 0 || $j("#prospectus").length > 0) {
+		$j(window).scroll(function() {
+			var fixedHeight = $j("#table_headers table:visible").height();
+			if ($j(window).scrollTop() >= $j("#table_headers").offset().top) {
+				$j("#table_lists").css("margin-top", fixedHeight);
+				$j("#table_headers table").addClass("jngwng");
+			}
+			if ($j(window).scrollTop() < $j("#table_headers").offset().top) {
+				$j("#table_headers table").removeClass("jngwng");
+				$j("#table_lists").css("margin-top", "0");
+			}
+
+		});
+	}
+
+	$j("#table_lists tr.fund").click(function() {
+		window.location.href = $j(this).children("td.f_name").children("a").attr("href");
+	});
+
+	$j("#category_landing table th a").click(function() {
+		
+		var sortOn = $j(this).parent().attr("class");
+		var sortTable = $j(this).parent().parent().parent().parent().parent().attr("class");
+		if ($j(this).hasClass("active") && $j(this).hasClass("asc")) {
+			$j("." + sortTable + " table tbody > tr").tsort("td." + sortOn, {
+				order : "desc"
+			});
+			$j(this).removeClass("asc").addClass("desc");
+			// $j(this).children("span").html("&uarr;");
+		} else {
+			$j("." + sortTable + " table th a").removeClass("active").removeClass("desc").removeClass("asc");
+			// $j("." + sortTable + " table th a span").html("&darr;");
+			$j(this).addClass("asc");
+			$j("." + sortTable + " table tbody > tr").tsort("td." + sortOn, {
+				order : "asc"
+			});
+		}
+		return false;
+	});
+
+	tooltip();
+
+	//remove white bar on the right for some link on the right top
+	// $j("#SPDR_links :last-child").css({
+		// "border-right" : "0px",
+		// "padding-right" : "0px"
+	// });
+
+	$j("#change_password_toggler").bind("click", function() {
+		$j("#change_password").toggleClass("active");
+		return false;
+	});
+
+	$j("#revert_to_saved").bind("click", function() {
+		$j("#editProfileForm")[0].reset();
+		return false;
+	});
+
+	var searchitems = [];
+	if ( typeof (allFunds) != 'undefined') {
+		searchitems = allFunds.replace(/&#38;|&amp;/g, "&").split(",");
+
+		autocomplete($j("#keywordInput"), searchitems, $j("#autocomplete_choices"));
+	}
+
+	$j("#searchSubmitButton").click(function() {
+		var searchThis = $j("#keywordInput").val();
+		submitSearch(searchThis);
+	});
+
+	$j("#searchBtn").click(function() {
+		$j("div.menu_list").hide();
+		$j("a.submenu_link").removeClass("activated");
+		$j("a.menu_link").removeClass("viewing");
+		$j("#SPDR_login").hide();
+		if ($j(this).hasClass("active")) {
+			$j("#overlay_area").height("auto").hide();
+			$j("#sitesearch").slideUp();
+			$j(this).removeClass();
+		} else {
+			$j("#overlay_area div").hide();
+			$j("#overlay_area").height($j(document).height()).show();
+			$j("#sitesearch").slideDown();
+			$j(this).addClass("active");
+		}
+		return false;
+	});
+
+	//display the first 8 rows including the header row
+	$j("#category_landing .products tbody tr:lt(7)").show();
+
+	//display "show more" links if there are more than 8 rows
+	if ($j('#category_landing .products tbody tr').length > 7) {
+		$j('<div class="show_more_row"><a href="#">Show more</a></div>').insertAfter('#category_landing .products table');
+		$j(".show_more_row a").click(function() {
+			if ($j(this).parent().hasClass("minus")) {
+				$j(this).parent().removeClass("minus");
+				$j(this).text("Show more");
+				var elementOffsetTop = $j(this).offset().top;
+				var windowScrollTop = $j(window).scrollTop();
+				var elementPosY = elementOffsetTop - windowScrollTop;
+				$j('#category_landing .products tbody tr').hide();
+				$j("#category_landing .products tbody tr:lt(7)").show();
+				//$j(window).scrollTop($j(this).parent('.show_more_row').prev('table').offset().top);
+				$j(window).scrollTop($j(this).offset().top - elementPosY);
+			} else {
+				$j(this).parent().addClass("minus");
+				$j(this).text("Show less");
+				$j('#category_landing .products tbody tr').show();
+			}
+		});
+	}
+
+	//TODO: AD HOC fixing for overriding issue on IBGTOOLs, Please remove the following code once the issus was fixed.
+	if (document.title.indexOf('VRD') == 0) {
+		try {
+			var toBeOverrided = $j('div.overview div.leftm div.sect td.label:contains("Duration")').next().next();
+			if (toBeOverrided.html().indexOf('N/A') >= 0) {
+				toBeOverrided.html('7 Day Reset');
+			}
+		} catch(e) {
+		}
+	}
+
+	//AD HOC fixing for IE10 only.
+	//basically, this overrides the (or add if not exists) XMLSerializer.serializeToString method which will be called in the A4J code in runtime,
+	//TODO: Please remove the method if there is no A4J function in all the pages.
+	if ($j.browser.msie && navigator.userAgent.toLowerCase().indexOf('msie 10') != -1) {
+		if ( typeof window.XMLSerializer == "undefined") {
+			window.XMLSerializer = function() {
+			};
+		}
+		window.XMLSerializer.prototype.serializeToString = function(xmlNode) {
+			return xmlNode.xml || '';
+		};
+	}
+
+	// the following is added to provide tooltip for options that could not show complete in select dropdown
+	$j('option').prop("title", function() {
+		return this.innerHTML.replace(/\&amp;/g, '&');
+	});
+	//lauch webtrends here in the end.
+	if ( typeof (_tag) != "undefined") {
+		//        _tag.dcsCustom=function(){
+		//         //#################### PUT ALL Fixed tag here for ##########################
+		//        }
+		_tag.dcsCollect();
+	}
+
+	//check if the current location has the parameter video
+	var videoId = getUrlParam("vid");
+	if (videoId) {
+		//there is a vid field;
+		$j.post("/seam/resource/video", {
+			videoId : videoId
+		}, function(data) {
+			if (data) {
+				if (data.protectedResource) {
+					storedLink.status = true;
+					storedLink.href = videoId;
+					storedLink.video = true;
+					storedLink.popup = false;
+					createHiddenIframeOverlay('/login/login.seam');
+					return false;
+					//var videoLoginAddress = getProtectedVideoSiteminderUrl(videoId);
+					//window.location.href = videoLoginAddress;
+					//return;
+				} else {
+					video_on({
+						"video_id" : data.id,
+						"video_title" : data.title,
+						"video_description" : data.desc,
+						"video_author" : data.author
+					});
+				}
+			}
+		}, "json");
+	}
+	/*
+		To Handle the situation that the user visit the protected resource directly, open the login page at the home page
+	*/
+	if (typeof(hasProtectedTarget) != "undefined") {
+		if ( hasProtectedTarget == 'Y') {
+			storedLink.status = true;
+			storedLink.video = false;
+			storedLink.inframe = false;
+			storedLink.newwin = false;
+			storedLink.href = protectedTarget;
+			createIframeOverlay('/login/login.seam');
+		}
+	}
+	
+	//Close the email overlay on Capital Gains page if the field validation passed.
+	 if($j("#email iframe").length > 0) {
+		$j("#email iframe").load(function(){
+			var isEmpty = false;
+			$j("#email iframe").contents().find("input.text").each(function(){
+				if ($j(this).val() == "" && ($j(this).attr("name") != "capGainForm:subject")) {
+					isEmpty = true;
+				}
+			});
+			
+			if ($j("#email iframe").contents().find("#contactPanel .required").children().length == 0 && !isEmpty){
+				$j("#email iframe").contents().find("input.text").each(function(){
+					if (($j(this).attr("name") != "capGainForm:subject")) {
+						$j(this).val("");
+					}
+				});
+				$j("#overlay_area").click();
+			}
+		});
+	}
+	
+	// education & commentary pages show client ready checkbox
+	$j("#edu_comm #show_only input").click(function() {
+		if($j("#edu_comm #show_only input").is(":checked")) {
+			// hide not client_ready documents
+			$j("#edu_comm #results tbody tr:not(.client_ready)").hide();
+			$j("#edu_comm #nav ul ul li span").hide();
+			$j("#edu_comm #nav ul ul li span + span").show();
+		}
+		// if show all
+		else{
+			$j("#edu_comm #results tbody tr:not(.client_ready)").show();
+			$j("#edu_comm #nav ul ul li span").show();
+			$j("#edu_comm #nav ul ul li span + span").hide();
+		}
+		// update results amount
+		$j("#edu_comm #results h2 span").html("(" + $j("#edu_comm #results tbody tr:visible").size() + ")");
+	});
+	
+	// education & commentary pages sort table
+	$j("#edu_comm div.sortable table thead th a").click(function(event) {
+		var $curr_table = $j(this).closest("table"), sort_type = $j(this).parent().attr("class");
+		var sort_order = $j(this).hasClass("asc") ? "desc" : "asc";
+
+		$curr_table.find("tbody tr").tsort("td." + sort_type, {order:sort_order});
+		$curr_table.find("thead a").removeClass("asc desc");
+		$j(this).addClass(sort_order);
+	
+		return false;
+	});
+});
+//end of document.ready
+$j(document).on("click", '#login_link', function() {	
+	createIframeOverlay('/login/login.seam');
+	return false;
+});
+$j(document).on("click", '.login', function() {	
+	createIframeOverlay('/login/login.seam');
+	return false;
+});
+$j(document).on('click', '#logoutLink', function() {
+	createHiddenIframeOverlay('/logout/index.seam');
+	return false;
+});
+$j(document).on("click", '#profileLink', function() {	
+	createIframeOverlay('/registration/profile/overlay/index.seam');
+	return false;
+});
+
+// $j(document).on("click", "#country_selector", function(){
+	// //$j(".overlay_content#countrySelection").show();
+	// $j("#locations").show();
+	// webTrendsForGlobalOverlay('Global Locations');
+	// relocateOverlay();
+	// overlay_on();
+	// return false;
+// });
+
+$j("body").on("hover", function() {
+	tooltip();
+});
+
+$j(document).on("click", ".overlay_link", function() {
+	var theoverlay = $j(this).attr("type");
+	var thelink = $j(this).attr("href");
+	$j("#overlay_area").height($j(document).height()).show();
+	$j("#SPDR_nav a.menu_link").css("z-index", "0");
+	$j("#SPDR_nav a.tab").css("z-index", "0");
+	$j("#login_link").css("z-index", "0");
+	$j("#overlay_area div").height($j(document).height()).show();
+	if (theoverlay == "analyzer" && toolstatus == false) {
+		$j("<iframe style='border-style:none;width:100%;height:100%;' src='" + thelink + "' marginheight='0' frameborder='0'></iframe").appendTo("#analyzer");
+		toolstatus = true;
+	}
+	$j("#" + theoverlay).show();
+	$j("html, body").animate({
+		scrollTop : 0
+	}, "fast");
+	return false;
+});
+
+$j(document).on("click", ".definition a", function() {
+	if ($j(this).parent().hasClass("hinting")) {
+		$j("#overlay_area").click();
+	} else {
+		$j("#overlay_area div").hide();
+		$j("#overlay_area").height($j(document).height()).show();
+		$j("#SPDR_nav a.tab").removeAttr("style");
+		$j("a.btn_quicklinks").removeClass("active").css("z-index", "0");
+		$j("div.menu_list").hide().removeClass("fullwidth");
+		$j("div.menu_list").children(".menu_shadow, .menu_spaces").css("height", "auto");
+		$j("div.menu_list a,div.menu_list div,a#login_link").removeClass("active");
+		$j("a.menu_link").removeClass("viewing");
+		$j("a.submenu_link").removeClass("activated");
+		$j("a#login_link").removeClass("active");
+		$j("#SPDR_login").hide();
+		$j("a.btn_quicklinks").removeClass("active").css("z-index", "0");
+		;
+		$j("div.quicklinks").hide();
+		$j(".definition").removeClass("hinting");
+		$j(this).parent().addClass("hinting");
+	}
+});
+
+$j(document).on("click", "#mgmtTeam a.bio_toggle", function() {
+	if ($j(this).next().hasClass("active")) {
+		$j(this).next().removeClass("active");
+		$j(this).html("Show Bio<span></span>");
+	} else {
+		$j(this).next().addClass("active");
+		$j(this).html("Hide Bio<span></span>");
+	}
+	return false;
+});
+
+$j(document).on("click", "#search_filters a", function() {
+	if ($j(this).next().hasClass("menu")) {
+		if ($j(this).next().hasClass("active")) {
+			$j(this).next().removeClass("active")
+		} else {
+			$j(this).next().addClass("active")
+		}
+		return false;
+	}
+});
+
+$j(document).on("click", "#tabs a", function() {
+	if ($j(this).hasClass("active") || $j(this).hasClass("dead2me")) {
+	} else {
+		var thisIs = $j(this).attr("class");
+		$j(this).parent().children().removeClass("active");
+		// used on Home, Fund Detail and Traders & Authorized Participants
+		if ($j(this).parent().hasClass("switch1")) {
+			$j("div.tab_section").hide();
+			$j("div." + thisIs).show();
+		}
+		// used on View All Funds
+		else if ($j(this).parent().hasClass("switch2")) {
+			$j("#table_headers table,#table_lists>span").hide();
+			$j("#table_headers table." + thisIs).show();
+			$j("#table_lists>span." + thisIs).show();
+
+		}
+		// used on Perspetuses & Product Literature
+		else if ($j(this).parent().hasClass("switch3")) {
+			$j(".actions div").hide();
+			$j(".actions div." + thisIs).show();
+			$j("#table_lists div table input,#table_lists div table span,#table_lists div table a.tooltip").hide();
+			$j("#table_lists div table ." + thisIs).show();
+			$j("#table_lists input:text").each(function() {
+				if ($j(this).val() != "0") {
+					$j(this).prev().attr('checked', 'checked');
+				}
+			});
+			$j("#table_lists input:checkbox").each(function() {
+				if ($j(this).attr("checked") == "checked") {
+					$j(this).next().addClass("over0");
+				}
+			});
+		} else {
+		}
+		if ($j("#table_lists input.over0").length == 0 && $j(this).hasClass("mail_order")) {
+			$j(".actions a.mail_order").addClass("inactive");
+		}
+		$j(this).addClass("active");
+	}
+	return false;
+});
+
+$j(document).on("click", ".period_controls a", function() {
+	if ($j(this).hasClass("active")) {
+	} else {
+		var which1 = $j(this).attr("class");
+		$j(".period_chart").hide();
+		$j("div." + which1).show();
+		$j(".period_controls a").removeClass("active");
+		$j(this).addClass("active");
+
+	}
+	return false;
+});
+
+$j(document).on("click", "a#before_tax", function() {
+	$j(".performance_chart table tr.after").hide();
+	$j(".performance_chart table tr.before").show();
+	$j(this).addClass("inactive");
+	$j("a#after_tax").removeClass("inactive");
+	return false;
+});
+
+$j(document).on("click", "a#after_tax", function() {
+	$j(".performance_chart table tr.before").hide();
+	$j(".performance_chart table tr.after").show();
+	$j(this).addClass("inactive");
+	$j("a#before_tax").removeClass("inactive");
+	return false;
+});
+
+$j(document).on("click", "#leaving_decline", function() {
+	$j("#overlay_area").click();
+});
+
+$j(document).on("click", "#leaving_accept", function() {
+	$j("#overlay_area").click();
+	window.open($j(this).attr("href"));
+	return false;
+});
+
+/*Add Europe, HK, SG, AU, JP dev and uat urls as allow sites for global locations*/
+var allowedSites = "on24.com,spdrs.com,ssgafunds.com,statestreetspdrs.com,spdru.com,spdrsmobile.com,intrepidagile.com,globalspdrs.com,etffactorfiction.com,spdr-etfs.com,etfed.spdrs.com,idmanagedsolutions.com,blog.spdrs.com,ssga.upromise529.com,linkedin.com,spdrseurope.com,spdrs.com.au,spdrs.com.hk,spdrs.jp,spdrs.com.sg,spdrseurope-dev.ssga.statestr.com,spdrs-au-dev.ssga.statestr.com,spdrs-hk-dev.ssga.statestr.com,spdrs-jp-dev.ssga.statestr.com,spdrs-sg-dev.ssga.statestr.com,uat-spdrseurope.com,uat-www-au.ssgafunds.com,uat-www-hk.ssgafunds.com,uat-www-jp.ssgafunds.com,uat-www-sg.ssgafunds.com,spdrseurope-newdev.ssga.statestr.com,spdrs-newdev.ssga.statestr.com,uat-www.spdrs.com,uat-www.spdrseurope.com,uat-www.globalspdrs.com,us.spdrs.com,uk.spdrs.com,be.spdrs.com,dk.spdrs.com,de.spdrs.com,fi.spdrs.com,fr.spdrs.com,ie.spdrs.com,it.spdrs.com,lu.spdrs.com,nl.spdrs.com,no.spdrs.com,at.spdrs.com,es.spdrs.com,se.spdrs.com,ch.spdrs.com,global.spdrs.com,apac.spdrs.com,europe.spdrs.com";
+
+//For IE6 and IE7, due to the z-index overlay issue is not fixed, so the leaving_accept button is not clicked but the div.
+$j(document).on("click", "a", function(event) {
+	var overlay_target = $j(this).attr("href");
+	if ($j(this).attr('id') == 'leaving_accept') {
+		event.preventDefault();
+		return false;
+	}
+	//only care about the external URLs.
+	//for IE6-7 the attr('href') always return the full URL, we have to parse it.
+	if (typeof overlay_target != 'undefined' && overlay_target != null && overlay_target.indexOf('http') == 0 && overlay_target.toLowerCase().indexOf(window.location.hostname.toLowerCase()) == -1) {
+		//will use the var allowedSites initialized in the header.
+		var theDomain = overlay_target.match(/:\/\/(.[^/]+)/)[1].replace(/^www\./, '');
+		if (allowedSites.toLowerCase().indexOf(theDomain.toLowerCase()) == -1) {
+			//Open the pop-up.
+			$j("#overlay_area").height($j(document).height()).show();
+			$j("#overlay_area div").height($j(document).height()).show();
+
+			$j("#leavingSite").show();
+			relocateOverlay();
+			
+			$j("#SPDR_nav a.menu_link,#SPDR_nav a.tab,#login_link").css("z-index", "0");
+			$j("html, body").animate({
+				scrollTop : 0
+			}, "fast");
+			$j("#leaving_accept").attr("href", overlay_target);
+			event.preventDefault();
+			return false;
+		}
+	}
+});
+
+$j(document).on("click", ".close_overlay", function() {
+	//removeLink();
+	if ($j("#video").is(":visible")) {
+		$j("#video .container").html('<div class="video_holder"><div id="video_player"></div></div>');
+	}
+	$j("#overlay_area").click();
+});
+
+//Set Fcc User ID in iframe when retrieve ID successfully
+function setFccUserId(iframe) {
+	var doc = iframe.contentDocument || iframe.contentWindow.document;
+	doc.getElementById("USER").value = $j("#help_user_id").val();
+}
+
+//This method is to correct path for AJAX loading local file, which IE supports this.
+//For example, on local, it will change the url /site-content/data/spy.xml --> ../../site-content/data/spy.xml
+function parseUrl(url) {
+	try {
+		if (window.location.protocol == 'file:') {
+			//we only need to deal with the only two Teamsite paths
+			if (url.indexOf('/site-content') == 0 || url.indexOf('/library-content') == 0) {
+				return jQuery("script[src*='/site-content']").attr('src').replace(/\/site-content.*/, '') + url
+			}
+		}
+	}
+	//ignore any error to not impact any exsiting funcitons
+	catch(e) {
+	}
+	return url;
+}
+
+//Change Holdings Tab in Fund detail page with one column to two columns
+function adjustSingleColumn() {
+	if ($j("div.holdings .sect[id^='INDEX_']").length <= 0) {
+		var sectsL = "";
+		var sectsR = "";
+		$j("div.holdings .sect").each(function() {
+			var sectID = $j(this).attr("id");
+			if (!!sectID && (sectID.indexOf("FUND_TOP_TEN_HOLDINGS") != -1 || sectID.indexOf("FUND_TOP_HOLDINGS") != -1 || sectID.indexOf("FUND_SECTOR") != -1)) {
+				sectsL += $j(this).parent('.col2s').html();
+			} else {
+				sectsR += $j(this).parent('.col2s').html();
+			}
+		});
+		$j("div.holdings").html("<div class='col2s leftm'>" + sectsL + "</div><div class='col2s'>" + sectsR + "</div>");
+	}
+}
+
+//opens all categories
+$j(document).on("click", "a#expand_all,a.expand_all", function() {
+	$j("div#table_lists a.category_toggler").addClass("open");
+	$j("#table_lists div").addClass("active");
+	$j("a#expand_all,a.expand_all").addClass("inactive");
+	$j("a#close_all,a.close_all").removeClass("inactive");
+	return false;
+});
+
+$j(document).on("click","#detail a.category_toggler", function(){
+	$j(this).toggleClass("active"); 
+	$j(this).next().slideToggle();  	
+	//$j(this).next().toggleClass("active");    
+	return false;
+});
+
+//closes all categories
+$j(document).on("click", "a#close_all,a.close_all", function() {
+	$j("div#table_lists a.category_toggler").removeClass("open");
+	$j("#table_lists div").removeClass("active");
+	$j("a#close_all,a.close_all").addClass("inactive");
+	$j("a#expand_all,a.expand_all").removeClass("inactive");
+	return false;
+});
+
+$j("#toolsTemplate").on("click", "thead th a", function() {
+	var sortOn = $j(this).parent().attr("class");
+	if ($j(this).hasClass("asc")) {
+		$j(this).removeClass("asc");
+		$j("#toolsTemplate table tbody > tr").tsort("td." + sortOn, {
+			order : 'desc'
+		});
+	} else {
+		$j("#toolsTemplate th a").removeClass("asc");
+		$j(this).addClass("asc");
+		$j("#toolsTemplate table tbody > tr").tsort("td." + sortOn, {
+			order : 'asc'
+		});
+	}
+	return false;
+});
+
+//opens/closes categories
+$j(document).on("click", "#table_lists a.category_toggler", function() {
+	if ($j(this).hasClass("open")) {
+		$j(this).removeClass("open");
+	} else {
+		$j(this).addClass("open");
+	}
+	var noba = $j(this).index();
+	if ($j(this).next().hasClass("active")) {
+		if ($j("#viewall").length > 0) {
+			$j("#table_lists span").each(function() {
+				$j(this).children(":eq(" + noba + ")").next().removeClass("active");
+				$j(this).children(":eq(" + noba + ")").removeClass("open");
+			});
+		} else {
+			$j(this).next().removeClass("active");
+			$j(this).removeClass("open");
+		}
+		$j("a#expand_all,a.expand_all").removeClass("inactive");
+	} else {
+		if ($j("#viewall").length > 0) {
+			$j("#table_lists span").each(function() {
+				$j(this).children(":eq(" + noba + ")").next().addClass("active");
+				$j(this).children(":eq(" + noba + ")").addClass("open");
+			});
+			
+		} else {
+			$j(this).next().addClass("active");
+			$j(this).addClass("open");
+		}
+		$j("a#close_all,a.close_all").removeClass("inactive");
+	}
+	if ($j("#table_lists div.active").length == 0) {
+		$j("a#close_all,a.close_all").addClass("inactive");
+	}
+	if ($j("#table_lists div.active").length == $j("#table_lists div").length) {
+		$j("a#expand_all,a.expand_all").addClass("inactive");
+	}
+	return false;
+});
+
+function checkDownLoadBtn(btn) {
+	var btn = window.document.getElementById("orderByMail:download");
+	if ($j(btn).hasClass("inactive")) {
+		return false;
+	}
+	setCallback();
+	return true;
+}
+
+//ajax call the return link xml
+function addReturnLinktoLandingPage() {
+	$j.ajax({
+		url : "/public/spdrReturnLinks.xml",
+		dataType : "xml",
+		error : function() {
+		},
+		success : function(xml) {
+			writeReturnLink(xml);
+		}
+	});
+}
+
+//write the return link in page
+function writeReturnLink(xml) {
+	$j(xml).find("page").each(function() {
+		var identifier = $j(this).find("identifier").text();
+		if (current_path.toLowerCase() === identifier.toLowerCase()) {
+			var returnName = $j(this).find("linkName").text();
+			var returnURL = $j(this).find("linkURL").text();
+			$j('<a href="' + returnURL + '" id="returnLink" target="_blank">' + returnName + '</a>').prependTo(".products_header");
+		}
+	});
+}
+
+function overlay_on() {
+	$j("#overlay_area").height($j(document).height()).show();
+	$j("#overlay_area div").height($j(document).height()).show();
+	$j("html, body").animate({
+		scrollTop : 0
+	}, "fast");
+}
+
+$j(document).on('click','#overlay_area',function() {
+	storedLink = storedDefault;
+	$j("#overlay_area").height("auto").hide();
+	$j("#SPDR_nav a.tab").removeAttr("style");//removed #login_link
+	$j("a.btn_quicklinks").removeClass("active").css("z-index", "0");
+	$j("div.menu_list").hide().removeClass("fullwidth");
+	$j("div.menu_list").children(".menu_shadow, .menu_spaces").css("height", "auto");
+	$j("div.menu_list a,div.menu_list div,a#login_link").removeClass("active");
+	$j("a.menu_link").removeClass("viewing");
+	$j("div.definition").removeClass("hinting");
+	$j("a.submenu_link").removeClass("activated");
+	$j("#overlay_area div,#SPDR_login,div.quicklinks,div.overlay_content").hide();
+	$j("#sitesearch").slideUp();
+	$j("#searchBtn").removeClass("active");
+});
+
+
+
+var video_object = "<object class='BrightcoveExperience'><param name='bgcolor' value='#FFFFFF' /><param name='width' value='480' /><param name='height' value='270' /><param name='playerID' value='3500850438001' /><param name='playerKey' value='AQ~~,AAACCRtJeGk~,08TW7eCbZwGeB58mOrAWzjVIgq5gMltI' /><param name='isUI' value='true' /><param name='isVid' value='true' /><param name='dynamicStreaming' value='true' /><param name='@videoPlayer' value='' /><param name='includeAPI' value='true' /><param name='templateLoadHandler' value='SSGAV.onTemplateLoad' /><param name='templateReadyHandler' value='SSGAV.onTemplateReady' /><param name='secureConnections' value='true' /><param name='secureHTMLConnections' value='true' /></object>";
+var SSGAV = {};
+SSGAV.onTemplateLoad = function(experienceID) {
+	SSGAV.player = brightcove.api.getExperience(experienceID);
+	SSGAV.APIModules = brightcove.api.modules.APIModules;
+};
+SSGAV.onTemplateReady = function() {
+	SSGAV.videoPlayer = SSGAV.player.getModule(SSGAV.APIModules.VIDEO_PLAYER);
+	SSGAV.videoPlayer.addEventListener(brightcove.api.events.MediaEvent.BEGIN, SSGAV.onVideoBegin);
+};
+SSGAV.onVideoBegin = function() {
+	//$j("#video .related").css("display", "block");
+};
+
+//XXXXXXXXXXXXXXX VIDEO Entrace for the video url convention and the video link XXXX
+//XXXXXXXXXXXXXXX Parameter: obj is an video data object XXXXXXXXXXXXXXXXXXXXXXXXXXX
+function video_on(obj) {
+	overlay_on();
+	relocateOverlay();
+	retrieveVideoOverlay(obj);
+}
+
+//Retrieve the video overlay HTML template
+function retrieveVideoOverlay(obj) {
+	$j.ajax({
+		url : "/videoTemplate.seam",
+		success : function(data) {
+			//append the video to the wrapper
+			$j("#SPDR_wrapper").append(data);
+			//embed the video
+			video_embed(obj);
+			//show the video
+			$j("#video").show();
+			relocateOverlay();
+		}
+	});
+}
+
+//Build the video content
+function video_embed(video_info) {
+	var video_html = "", video_id = video_info.video_id, video_title = video_info.video_title, video_author = video_info.video_author, video_author_title = video_info.video_description;
+
+	$j("#video h2").html(video_title);
+
+	video_html += (!!video_author ? "<p class='author'>" + video_author + "</p>" : "");
+	video_html += (!!video_author_title ? "<p>" + video_author_title + "</p>" : "");
+	$j("#video .video_desc").html(video_html);
+	//$j("#video .container").prepend(video_html);
+
+	video_object = video_object.replace(/name='@videoPlayer' value='[0-9A-Za-z:]*'/, "name='@videoPlayer' value='ref:" + video_id + "'");
+	$j("#video_player").html(video_object);
+	brightcove.createExperiences();
+	wtTrackVideo(video_title);
+}
+
+function getUrlParam(name) {
+	var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+	var r = window.location.search.substr(1).match(reg);
+	if (r != null)
+		return unescape(r[2]);
+	return null;
+}
+
+function str2asc(strstr) {
+	return ("0" + strstr.charCodeAt(0).toString(16)).slice(-2);
+}
+
+function UrlEncode(str) {
+	var ret = "";
+	var strSpecial = "!\"#$%&'()*+,/:;<=>?[]^`{|}~%";
+	var tt = "";
+	for (var i = 0; i < str.length; i++) {
+		var chr = str.charAt(i);
+		var c = str2asc(chr);
+		tt += chr + ":" + c + "n";
+		if (parseInt("0x" + c) > 0x7f) {
+			ret += "%" + c.slice(0, 2) + "%" + c.slice(-2);
+		} else {
+			if (chr == " ")
+				ret += "+";
+			else if (strSpecial.indexOf(chr) != -1)
+				ret += "%" + c.toString(16);
+			else
+				ret += chr;
+		}
+	}
+	return ret;
+}
+
+//below can be deleted after confirming no other files are calling this function
+function isUserLogin() {
+	//if the length equal 1, means the user has already login
+	return $j("#logoutForm").children().length > 2;
+}
+
+function getProtectedVideoSiteminderUrl(videoId) {
+	//if the video is a protected resource
+	var host = "https://www.spdrs.com";
+	//the host
+	var resourcePath = window.location.pathname;
+	//the resource Path
+	var param = window.location.search;
+	//the param part
+	//the video from current url
+	var videoIdFromUrl = getUrlParam("vid");
+	if (videoIdFromUrl) {
+		//if current url already has the vid,just do nothing
+	} else {
+		//the current url does not have the vid
+		if (param) {
+			//build the url
+			var questionMarkPost = param.indexOf("?");
+			param = param.substring(questionMarkPost + 1, param.length);
+			param = "?vid=" + videoId + "&" + param;
+		} else {
+			param = "?vid=" + videoId;
+		}
+	}
+	var target = host + resourcePath + param;
+	//encode the target,so it won't lost any param
+	target = UrlEncode(target);
+	//get the final target
+	var address = "https://www.spdrs.com/mainLogin.seam?target=";
+	var finalAddress = address + target;
+	return finalAddress;
+}
+
+function openit(sendhere){
+	window.open(sendhere);
+//, '_blank', 'menubar=no,toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=yes,fullscreen=no,channelmode=no,width=1000,height=600').focus();
+	storedLink = storedDefault;		
+}
+
+$j(document).on("click", ".video_link", function() {
+	// get the video id
+	handleVideoLink(this);
+	return false;
+});
+function handleVideoLink(VideoElement) {
+	var vid = $j(VideoElement).attr("data-videoid");
+	if ($j(VideoElement).hasClass("protected")) {
+		storedLink.status = true;
+		storedLink.href = vid;
+		storedLink.inframe = false;
+		storedLink.video = true;
+		storedLink.popup = false;
+		createHiddenIframeOverlay('/login/login.seam');
+	} else {
+		var vtitle = $j(VideoElement).attr("data-title");
+		var vdesc = $j(VideoElement).attr("data-description");
+		var vauthor = $j(VideoElement).attr("data-author");
+		if (vauthor == "null") {
+			vauthor = "";
+		}
+		video_on({
+			"video_id" : vid,
+			"video_title" : vtitle,
+			"video_description" : vdesc,
+			"video_author" : vauthor
+		});
+	}
+}
+/**
+	User Click on a document
+*/
+$j(document).on("click", "a.doc", function() {
+	if ($j(this).hasClass("video_link")) {
+		// if it is a video link, save the video
+		handleVideoLink(this);
+		return;
+	}
+	// check if the document needs pop up disclaimer
+	var popUpDoc = $j(this).hasClass("popupDoc");
+	storedLink.status = true;
+	storedLink.inframe = false;
+	storedLink.href = $j(this).attr("href");
+	// open events in current window
+	if(storedLink.href == '/resources/events/'){
+		storedLink.newwin = false;	
+	}
+	if($j(this).hasClass("protectedDoc")){
+		if(popUpDoc){
+			storedLink.popup = true;
+			createIframeOverlay('/investorPop/index.seam');
+		} else {
+			createHiddenIframeOverlay('/login/login.seam');	
+		}
+		return false;
+	} else {
+		if(popUpDoc){
+			storedLink.popup = true;
+			createIframeOverlay('/investorPop/overlayPop.seam');
+			return false;
+		} else if(storedLink.newwin){
+			window.open(storedLink.href);
+			storedLink = storedDefault;
+			return false;
+		} else {
+			window.location.href = storedLink.href;
+			storedLink = storedDefault;
+			return false;
+		}
+	}
+});
+
+var toolURLs = {
+	'CorrelationTracker': {
+		'url': 'https://ssgaetf.idmanagedsolutions.com/ssgaetf/product?cust=',
+		'test': 'https://ssgaetf.show.idmanagedsolutions.com/ssgaetf/product?cust='
+	},
+	'EtfScreener': {
+		'url': 'https://ssgaetf.idmanagedsolutions.com/ssgaetf/screener?cust=',
+		'test': 'https://ssgaetf.show.idmanagedsolutions.com/ssgaetf/screener?cust='
+	},
+	'PerformanceAnalyzer': {
+		'url': 'https://ssgaetf.idmanagedsolutions.com/ssgaetf/analyze?cust=',
+		'test': 'https://ssgaetf.show.idmanagedsolutions.com/ssgaetf/analyze?cust='	
+	},
+	'LiquidityAnalyzer': {
+		'url': 'https://ssgaetf.idmanagedsolutions.com/ssgaetf/liquidity-analyzer?cust=',
+		'test': 'https://ssgaetf.show.idmanagedsolutions.com/ssgaetf/liquidity-analyzer?cust='
+	},
+	'FixedIncomePortfolioOptimization': {
+		'url': 'https://asi.advisorsoftware.com/asi01/initialentry?ent=SSGA-FIT%26cust=',
+		'test': 'https://staging01.advisorsoftware.com/asi01/initialentry?ent=SSGA-FIT%26cust='	
+	} 		
+};
+
+function wtTrackTool(toolName, URL) {
+	dcsMultiTrack('WT.ibg_tool_name', toolName, 'WT.ti', URL);
+}
+/**
+	Click on the IDC tools
+*/	
+$j(document).on("click", "a.tool_link", function(event) {
+	event.preventDefault();
+	// the gateway address
+	var endurl = '/seam/resource/asiGateway?toolsLocation=';
+	// get the href address
+	var toolname = $j(this).attr("href");
+	// change the link status to true
+	storedLink.status = true;
+	storedLink.inframe = false;
+	// save the link name
+	storedLink.href = toolname;
+	if($j(this).hasClass('idc')){
+		// to handle the ie 7 situation, cut the slash
+		var cutme = toolname.lastIndexOf('/'); //IE7
+		if(cutme){ toolname = toolname.substring(cutme + 1);} //IE7
+		// base on the toolname , get the address
+		var toolobject = toolURLs[toolname];
+		// check the enviroment and set the link
+		if(current_host == "www.spdrs.com" || current_host == "us.spdrs.com"){
+			storedLink.href = endurl + toolobject.url;
+		} else if(current_host == "uat-www.spdrs.com" || current_host == "uat-www-24.spdrs.com"){
+			storedLink.href = endurl + toolobject.test;
+		} else {
+			alert("The external tools are only available for UAT and PROD environments");
+			return false;
+		}	
+	}
+	// create the hidden iframe
+	createHiddenIframeOverlay('/login/login.seam');
+	wtTrackTool($j(this).text(), storedLink.href);
+	$j("div.menu_list").hide();
+	$j("a.menu_link").removeClass("viewing");
+	return false;
+});
+
+$j(document).on("click", "a.fundPerfAnalyzer", function(event) {
+	event.preventDefault();
+	// change the status
+	storedLink.status = true;
+	// get the href
+	storedLink.href = $j(this).attr("href");
+	// inframe is true...
+	storedLink.inframe = true;
+	storedLink.content = 'analyzer_tool';
+	createHiddenIframeOverlay('/login/login.seam');
+	wtTrackTool($j(this).text(), storedLink.href);
+	return false;
+});
+
+
+// user accepts 
+function userAcceptPopupDisclaimer() {
+	iframe_overlay_off();
+	if(storedLink.newwin){
+		window.open(storedLink.href);
+	} else {
+		window.location.href = storedLink.href;	
+	}
+	storedLink = storedDefault;
+}
+
+//user logged in
+function completeLoginLink(){
+	if(storedLink.status){
+		if(storedLink.video){
+			var videoId = storedLink.href;
+			$j.post("/seam/resource/video", {
+				videoId : videoId
+			}, function(data) {
+				if (data) {
+					video_on({
+						"video_id" : data.id,
+						"video_title" : data.title,
+						"video_description" : data.desc,
+						"video_author" : data.author
+					});
+				}
+			}, "json");
+		} else if(storedLink.inframe){
+			createIframeOverlay(storedLink.href);
+			if(storedLink.inframe && storedLink.content != 'nothing'){
+				$j('#iframeHolder').addClass(storedLink.content);
+			} else {
+				$j('#iframeHolder').attr('class', '');	
+			}
+		} else if(storedLink.newwin){
+			opennewwin(storedLink.href);
+		} else {
+			window.location.href = storedLink.href;
+		}	
+	}
+	storedLink = storedDefault;
+}
+function opennewwin(url) {
+	$j(".clickLink").remove();
+	var a = document.createElement("a");
+	a.setAttribute("href", url);
+	a.setAttribute("target", "_blank");
+	a.setAttribute("id", "camnpr");
+	a.setAttribute("class", "clickLink");
+	document.body.appendChild(a);
+	a.click();
+}
+function getUsername() {
+	var htmlText = $j("#logoutForm span").text();
+	var username = $j.trim(htmlText);
+	if (username == '') {
+		username = 'UNREGISTED';
+	} else {
+		username = username.replace('  ',' ');
+	}
+	return username;
+}
+$j(document).on("click", ".register", function(event) {
+	createIframeOverlay('/registration/overlay/index.seam');
+	return false;
+});
+$j(document).on("click", "#reg_footer_link", function(event) {
+	createIframeOverlay('/registration/overlay/index.seam');
+	return false;
+});
+$j(document).on("click", "a.linkin", function(event) {
+	event.stopPropagation();
+	webTrendsForMedia("LinkIn", getUsername());
+	return true;
+});
+$j(document).on("click", "a.blog", function(event) {
+	event.stopPropagation();
+	webTrendsForMedia("BLOG", getUsername());
+	return true;	
+});
+$j(document).on("click", "#countrySelection div div.region ul li a", function(event) {
+    event.stopPropagation();
+    var country = $j(this).text();
+    webTrendsForGlobalOverlay(country);
+    return true;    
+});
+// to record the user click for SPDRS BLOG on Search page
+$j(document).on("click", "div.styled_link a", function(event) {
+	webTrendsForMedia("BLOG", getUsername());
+	return true;	
+});
+
+function changeCaptchaImage(obj) {
+	var time = new Date().getTime();
+	$j(obj).attr('src', '/seam/resource/captcha?update&t=' + time);
+}
+$j(document).on("click", ".btn_back", function(){
+	history.go(-1);
+	return false;
+});
+
+$j(document).on("click", ".dynamic_embed", function(){
+	var embed_this = $j(this).attr("href");
+	/*$j.ajax({
+		url : embed_this,
+		success : function(data) {
+			$j("#SPDR_wrapper").append("<div id='dynamic_content' class='overlay_content'><a href='#' class='close_overlay'></a>" + data + "</div>");		
+			overlay_on();
+		}
+	});*/
+	$j("#SPDR_wrapper").append("<div id='dynamic_content' class='overlay_content'><a href='#' class='close_overlay'></a><iframe width='930' height='553' src='" + embed_this + "' frameborder='0' scrolling='no' style='margin-left:4px;'></iframe></div>");		
+	overlay_on();
+	return false;
+});
+function preCustomPageLogin(jumpUrl){
+	if (typeof(jumpUrl) != "undefined") {
+		var localurl = window.location.protocol + "//"  + window.location.host;
+		storedLink.status = true;
+		storedLink.video = false;
+		storedLink.inframe = false;
+		storedLink.newwin = false;
+		storedLink.href = localurl+"/"+jumpUrl;
+		createIframeOverlay('/login/login.seam');
+		//alert(window.location.protocol + "//"  + window.location.host+"/"+jumpUrl);
+	}
+}
