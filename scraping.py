@@ -15,6 +15,7 @@ def scraping():
 
     conn = lite.connect('orbis.sqlite',isolation_level = None)
     cur = conn.cursor()
+    cur.execute('''drop table if exists holding''')
     cur.execute('''create table holding
              (name varchar primary key,
               weight varchar,
